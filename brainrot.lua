@@ -1,60 +1,42 @@
--- Initial OrionLib Load (for Key System)
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local correctKey = "YoxanxHub Fire"
-local hasEnteredCorrectKey = false
+-- KEY SYSTEM (YoxanxHub Fire)
+if game:GetService("CoreGui"):FindFirstChild("OrionKeyUI") then
+    game:GetService("CoreGui").OrionKeyUI:Destroy()
+end
 
--- Create Key UI
-local KeyWindow = OrionLib:MakeWindow({
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+
+OrionLib:MakeWindow({
     Name = "YoxanXHub Key System",
     HidePremium = false,
     SaveConfig = false,
-    ConfigFolder = "YoxanXHub_Key"
+    ConfigFolder = "YoxanXKey",
+    IntroEnabled = true,
+    IntroText = "YoxanXHub Loading...",
+    IntroIcon = "rbxassetid://7733964641" -- Optional icon
 })
 
-local KeyTab = KeyWindow:Tab({
-    Name = "Key Access",
-    Icon = "lock",
-    PremiumOnly = false
+local correctKey = "YoxanxHub Fire"
+
+OrionLib:MakeNotification({
+    Name = "Key Required",
+    Content = "Enter the key to unlock the script.",
+    Image = "rbxassetid://7733964641",
+    Time = 6
 })
 
-KeyTab:Textbox({
-    Name = "Enter Key",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(input)
-        if input == correctKey then
-            hasEnteredCorrectKey = true
-            OrionLib:MakeNotification({
-                Name = "Correct Key",
-                Content = "Access granted!",
-                Time = 3
-            })
-            wait(1)
-            OrionLib:Destroy() -- Close key UI
-        else
-            OrionLib:MakeNotification({
-                Name = "Incorrect Key",
-                Content = "Join Discord to get the correct key.",
-                Time = 3
-            })
-        end
-    end
-})
-
-KeyTab:Button({
-    Name = "Copy Discord Link",
+OrionLib:MakeKeySystem({
+    Title = "YoxanXHub Key",
+    Subtitle = "Key is: YoxanxHub Fire",
+    Note = "Join discord.gg/HQ8WqhxQ for key info",
+    FileName = "YoxanxKeySave",
+    SaveKey = false,
+    GrabKeyFromSite = false,
+    Key = correctKey,
     Callback = function()
-        setclipboard("https://discord.gg/HQ8WqhxQ")
-        OrionLib:MakeNotification({
-            Name = "Copied",
-            Content = "Discord link copied to clipboard.",
-            Time = 3
-        })
+        OrionLib:Destroy() -- Destroy the key UI window
+        loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_PART2"))() -- Ganti ini ke link script 2/3
     end
 })
-
--- Wait for correct key
-repeat wait() until hasEnteredCorrectKey
 
 -- Reload OrionLib for the main UI
 OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
