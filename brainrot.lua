@@ -68,13 +68,6 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddButton({
-    Name = "Float GUI",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Youifpg/Steal-a-Brianrot/main/float.lua"))()
-    end
-})
-
 -- Steal Tab
 local StealTab = Window:MakeTab({
     Name = "Steal",
