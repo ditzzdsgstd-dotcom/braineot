@@ -1,288 +1,236 @@
--- Wait for game to load
-repeat task.wait() until game:IsLoaded()
-
 -- Load OrionLib
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
-local CorrectKey = "YoxanXFree"
-local UserInput = ""
+-- Variables
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local infiniteAmmoEnabled = false
+local killEnemyEnabled = false
+local espEnabled = false
 
--- Create Key UI Window
-local KeyWindow = OrionLib:MakeWindow({
-    Name = "YoxanXHub | KeyY System",
+-- Create Window
+local Window = OrionLib:MakeWindow({
+    Name = "YoxanXHub | Naval Warfare",
     HidePremium = false,
     SaveConfig = false,
-    ConfigFolder = "YoxanXKey"
+    ConfigFolder = "YoxanXHub"
 })
 
--- Key Tab
-local KeyTab = KeyWindow:MakeTab({
-    Name = "Enter Key",
-    Icon = "rbxassetid://7734053497",
-    PremiumOnly = false
-})
+-- Functions
+local function InfiniteAmmo(state)
+    infiniteAmmoEnabled = state
+    if state then
+        task.spawn(function()
+            while infiniteAmmoEnabled and task.wait(3) do
+                pcall(function()
+                    local oh_get_gc = getgc or false
+                    local oh_is_x_closure = is_synapse_function or issentinelclosure or is_protosmasher_closure or is_sirhurt_closure or checkclosure or false
+                    local oh_get_info = debug.getinfo or getinfo or false
+                    local oh_set_upvalue = debug.setupvalue or setupvalue or setupval or false
 
--- Textbox
-KeyTab:AddTextbox({
-    Name = "Type the Key",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(Value)
-        UserInput = Value
-    end
-})
+                    if not oh_get_gc or not oh_get_info or not oh_set_upvalue then return end
 
--- Submit Button
-KeyTab:AddButton({
-    Name = "Submit",
-    Callback = function()
-        if UserInput == CorrectKey then
-            OrionLib:MakeNotification({
-                Name = "Success",
-                Content = "Correct Key!",
-                Image = "rbxassetid://7733964641",
-                Time = 3
-            })
-
-            task.delay(0.5, function()
-                -- 🔥 Manual Orion destroy
-                for _, v in pairs(game.CoreGui:GetChildren()) do
-                    if v.Name == "Orion" then
-                        v:Destroy()
+                    local function oh_find_function(name)
+                        for _, v in pairs(oh_get_gc()) do
+                            if type(v) == "function" and not oh_is_x_closure(v) then
+                                if oh_get_info(v).name == name then return v end
+                            end
+                        end
                     end
-                end
 
-                -- 🔁 Reload Orion
-                OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-                _G.MainWindow = OrionLib:MakeWindow({
-                    Name = "YoxanXHub",
-                    HidePremium = false,
-                    SaveConfig = true,
-                    ConfigFolder = "YoxanXHub"
-                })
-
-                -- Check if main window exists
-if not _G.MainWindow then return end
-
--- 🛡️ Main Tab
-local MainTab = _G.MainWindow:MakeTab({
-    Name = "Main",
-    Icon = "rbxassetid://7734053497",
-    PremiumOnly = false
-})
-
-MainTab:AddToggle({
-    Name = "Godmode",
-    Default = false,
-    Callback = function(state)
-        local Player = game:GetService("Players").LocalPlayer
-        local Character = Player.Character or Player.CharacterAdded:Wait()
-        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-        if state and Humanoid then
-            local Clone = Humanoid:Clone()
-            Clone.Parent = Character
-            Humanoid:Destroy()
-            Clone.Name = "Humanoid"
-            workspace.CurrentCamera.CameraSubject = Clone
-        end
-    end
-})
-
-MainTab:AddButton({
-    Name = "Rejoin Server",
-    Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local Player = game:GetService("Players").LocalPlayer
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
-    end
-})
-
-
--- 🎯 Steal Tab
-local StealTab = _G.MainWindow:MakeTab({
-    Name = "Steal",
-    Icon = "rbxassetid://7734068321",
-    PremiumOnly = false
-})
-
-StealTab:AddButton({
-    Name = "Speed Boost (94 WS)",
-    Callback = function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 94
-    end
-})
-
-StealTab:AddButton({
-    Name = "Float GUI",
-    Callback = function()
-        local gui = Instance.new("ScreenGui", game.CoreGui)
-        gui.Name = "FloatGUI"
-
-        local btn = Instance.new("TextButton", gui)
-        btn.Size = UDim2.new(0, 150, 0, 40)
-        btn.Position = UDim2.new(0.5, -75, 0.5, -20)
-        btn.Text = "Float Up"
-        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 14
-        btn.Draggable = true
-
-        local toggled = false
-        local originalPos = nil
-
-        btn.MouseButton1Click:Connect(function()
-            local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not root then return end
-
-            if not toggled then
-                originalPos = root.Position
-                root.CFrame = root.CFrame + Vector3.new(0, 200, 0)
-                btn.Text = "Float Down"
-            else
-                root.CFrame = CFrame.new(originalPos or root.Position - Vector3.new(0, 200, 0))
-                btn.Text = "Float Up"
+                    local oh_reload = oh_find_function("reload")
+                    if oh_reload then
+                        oh_set_upvalue(oh_reload, 4, math.huge)
+                    end
+                end)
             end
-            toggled = not toggled
         end)
     end
-})
+end
 
-
--- 🧠 ESP Tab
-local VisualTab = _G.MainWindow:MakeTab({
-    Name = "ESP",
-    Icon = "rbxassetid://7734098371",
-    PremiumOnly = false
-})
-
-VisualTab:AddToggle({
-    Name = "Base Timer ESP",
-    Default = false,
-    Callback = function(state)
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("TextLabel") and string.find(obj.Name:lower(), "timer") then
-                obj.Visible = state
-            end
-        end
-    end
-})
-
-VisualTab:AddToggle({
-    Name = "X-Ray Player ESP",
-    Default = false,
-    Callback = function(state)
-        for _, plr in ipairs(game:GetService("Players"):GetPlayers()) do
-            if plr ~= game.Players.LocalPlayer and plr.Character then
-                for _, part in pairs(plr.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.Transparency = state and 0.5 or 0
-                        part.Material = state and Enum.Material.ForceField or Enum.Material.Plastic
-                    end
-                end
-            end
-        end
-    end
-})
-                    
-local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
-local LocalPlayer = Players.LocalPlayer
-
--- Add new tab
-local ExtraTab = Window:MakeTab({
-    Name = "Extra Tools",
-    Icon = "rocket",
-    PremiumOnly = false
-})
-
--- BASE TIMER ESP (looks for countdowns near base)
-ExtraTab:AddToggle({
-    Name = "Base Timer ESP",
-    Default = false,
-    Callback = function(state)
-        if state then
-            OrionLib:MakeNotification({
-                Name = "Base Timer ESP",
-                Content = "Enabled - Timer will appear above bases",
-                Image = "rbxassetid://7733964641",
-                Time = 4
-            })
-            game:GetService("RunService").RenderStepped:Connect(function()
-                for _,v in pairs(workspace:GetDescendants()) do
-                    if v:IsA("TextLabel") and v.Text:find("s") and v.Visible then
-                        v.TextColor3 = Color3.fromRGB(255, 100, 100)
-                        v.TextStrokeTransparency = 0.5
+local function KillEnemy()
+    killEnemyEnabled = true
+    OrionLib:MakeNotification({
+        Name = "Kill Enemy",
+        Content = "Auto-kill activated.",
+        Image = "rbxassetid://4483345998",
+        Time = 3
+    })
+    task.spawn(function()
+        while killEnemyEnabled and task.wait(0.1) do
+            pcall(function()
+                local character = LocalPlayer.Character
+                if character and character:FindFirstChild("Humanoid") then
+                    for _, v in pairs(workspace:GetDescendants()) do
+                        if v:IsA("Humanoid") and v.Parent and v.Parent:FindFirstChild("HumanoidRootPart") then
+                            local targetPlayer = Players:GetPlayerFromCharacter(v.Parent)
+                            if targetPlayer and targetPlayer.Team ~= LocalPlayer.Team then
+                                local Event = game:GetService("ReplicatedStorage"):WaitForChild("Event")
+                                Event:FireServer("shootRifle", "", {v.Parent.HumanoidRootPart})
+                                Event:FireServer("shootRifle", "hit", {v})
+                            end
+                        end
                     end
                 end
             end)
-        else
+        end
+    end)
+end
+
+local function ESPS(state)
+    espEnabled = state
+    if not state then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character then
+                pcall(function()
+                    p.Character:FindFirstChild("Totally NOT Esp")?.Destroy()
+                    p.Character:FindFirstChild("Icon")?.Destroy()
+                end)
+            end
+        end
+        return
+    end
+
+    task.spawn(function()
+        while espEnabled do
+            pcall(function()
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude)
+
+                        if not player.Character:FindFirstChild("Totally NOT Esp") then
+                            local highlight = Instance.new("Highlight", player.Character)
+                            highlight.Name = "Totally NOT Esp"
+                            highlight.Adornee = player.Character
+                            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                            highlight.FillColor = player.TeamColor.Color
+                            highlight.FillTransparency = 0.5
+                        end
+
+                        if not player.Character:FindFirstChild("Icon") then
+                            local billboard = Instance.new("BillboardGui", player.Character)
+                            billboard.Name = "Icon"
+                            billboard.Size = UDim2.new(0, 200, 0, 50)
+                            billboard.AlwaysOnTop = true
+                            billboard.Adornee = player.Character.Head
+
+                            local label = Instance.new("TextLabel", billboard)
+                            label.Name = "ESP Text"
+                            label.BackgroundTransparency = 1
+                            label.Size = UDim2.new(1, 0, 1, 0)
+                            label.Font = Enum.Font.SciFi
+                            label.TextColor3 = player.TeamColor.Color
+                            label.TextSize = 18
+                            label.Text = player.Name .. " | " .. dist
+                        else
+                            player.Character.Icon["ESP Text"].Text = player.Name .. " | " .. dist
+                        end
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end)
+end
+
+-- Tabs and Sections
+local MainTab = Window:MakeTab({ Name = "Main", Icon = "rbxassetid://7733920766", PremiumOnly = false })
+MainTab:AddToggle({ Name = "Infinite Ammo", Default = false, Callback = InfiniteAmmo })
+MainTab:AddToggle({ Name = "ESP", Default = false, Callback = ESPS })
+MainTab:AddButton({ Name = "Kill Enemy", Callback = KillEnemy })
+
+local TeleportTab = Window:MakeTab({ Name = "Teleport", Icon = "rbxassetid://7734053493", PremiumOnly = false })
+
+local teleportButtons = {
+    {Title = "Japan Lobby", CFrame = CFrame.new(-4.103, -295.5, -36.644)},
+    {Title = "America Lobby", CFrame = CFrame.new(15.0, -295.5, 46.504)},
+    {Title = "America Harbour", CFrame = CFrame.new(-50.992, 23.0, 8129.594)},
+    {Title = "Japan Harbour", CFrame = CFrame.new(-150.507, 23.0, -8160.172)}
+}
+
+for _, btn in ipairs(teleportButtons) do
+    TeleportTab:AddButton({
+        Name = btn.Title,
+        Callback = function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = btn.CFrame
+                OrionLib:MakeNotification({
+                    Name = "Teleported",
+                    Content = "Moved to " .. btn.Title,
+                    Image = "rbxassetid://4483345998",
+                    Time = 3
+                })
+            end
+        end
+    })
+end
+
+local function teleportToIsland(islandCode)
+    local islands = workspace:FindFirstChild("Islands")
+    if not islands then return end
+
+    for _, island in pairs(islands:GetChildren()) do
+        local code = island:FindFirstChild("IslandCode")
+        local flagPost = island:FindFirstChild("Flag") and island.Flag:FindFirstChild("Post")
+        if code and code:IsA("StringValue") and code.Value == islandCode and flagPost then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = flagPost.CFrame
             OrionLib:MakeNotification({
-                Name = "Base Timer ESP",
-                Content = "Disabled",
-                Image = "rbxassetid://7733658504",
+                Name = "Teleported",
+                Content = "Island " .. islandCode,
+                Image = "rbxassetid://4483345998",
                 Time = 3
             })
+            return
         end
     end
-})
+end
 
--- SERVER HOP (joins lowest pop server)
-ExtraTab:AddButton({
-    Name = "Server Hop (Low Server)",
+TeleportTab:AddButton({ Name = "Island A", Callback = function() teleportToIsland("A") end })
+TeleportTab:AddButton({ Name = "Island B", Callback = function() teleportToIsland("B") end })
+TeleportTab:AddButton({ Name = "Island C", Callback = function() teleportToIsland("C") end })
+
+local PlayerTab = Window:MakeTab({ Name = "Player", Icon = "rbxassetid://7734053122", PremiumOnly = false })
+PlayerTab:AddButton({
+    Name = "GodMode (Safe Teleport)",
     Callback = function()
-        local HttpService = game:GetService("HttpService")
-        local Servers = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
-        local ServerData = HttpService:JSONDecode(Servers)
-
-        for _, server in pairs(ServerData.data) do
-            if server.playing < server.maxPlayers then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                break
-            end
-        end
-    end
-})
-
--- SPEED BOOST
-local Walkspeed = 16
-ExtraTab:AddToggle({
-    Name = "Speed Boost (WalkSpeed 40)",
-    Default = false,
-    Callback = function(state)
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hum = char:WaitForChild("Humanoid")
-        if state then
-            Walkspeed = hum.WalkSpeed
-            hum.WalkSpeed = 40
+        local team = LocalPlayer.Team and LocalPlayer.Team.Name or "Unknown"
+        if team == "Japan" then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-150.507, 23.0, -8160.172)
+        elseif team == "USA" then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-50.992, 23.0, 8129.594)
         else
-            hum.WalkSpeed = Walkspeed
+            OrionLib:MakeNotification({ Name = "Unknown Team", Content = "No teleport", Time = 3 })
         end
     end
 })
 
--- FLOAT GUI
-ExtraTab:AddButton({
-    Name = "Floating Button",
+PlayerTab:AddButton({
+    Name = "Stop Kill Enemy",
     Callback = function()
-        local ButtonGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-        ButtonGui.Name = "FloatButton"
-
-        local Float = Instance.new("TextButton", ButtonGui)
-        Float.Size = UDim2.new(0, 120, 0, 40)
-        Float.Position = UDim2.new(0, 20, 0.5, -20)
-        Float.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        Float.TextColor3 = Color3.new(1,1,1)
-        Float.Text = "Toggle UI"
-        Float.Font = Enum.Font.GothamBold
-        Float.TextSize = 16
-
-        Float.MouseButton1Click:Connect(function()
-            local ui = game:GetService("CoreGui"):FindFirstChild("Orion") or game.Players.LocalPlayer.PlayerGui:FindFirstChild("Orion")
-            if ui then
-                ui.Enabled = not ui.Enabled
-            end
-        end)
+        killEnemyEnabled = false
+        OrionLib:MakeNotification({ Name = "Auto-Kill Disabled", Content = "", Time = 3 })
     end
-})      
-                
+})
+
+PlayerTab:AddButton({
+    Name = "Infinite Jump (Premium)",
+    Callback = function()
+        OrionLib:MakeNotification({ Name = "Locked", Content = "Premium only.", Time = 3 })
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "Speed Boost (Premium)",
+    Callback = function()
+        OrionLib:MakeNotification({ Name = "Locked", Content = "Premium only.", Time = 3 })
+    end
+})
+
+-- Final Notification
+OrionLib:MakeNotification({
+    Name = "YoxanXHub",
+    Content = "Loaded successfully!",
+    Image = "rbxassetid://7733960981",
+    Time = 5
+})
