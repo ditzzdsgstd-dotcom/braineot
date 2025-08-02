@@ -1,46 +1,65 @@
--- Wait until game fully loads
+-- Wait for game to load
 repeat task.wait() until game:IsLoaded()
 
--- Load OrionLib (dari Nightmare)
+-- Load OrionLib (Nightmare version)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Delay supaya UI bisa tampil normal
-task.wait(0.5)
+-- Key value
+local CorrectKey = "YoxanxHubFire"
 
--- Create the window
-local Window = OrionLib:MakeWindow({
+-- Create initial window for key input
+local KeyWindow = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = "YoxanXKey"
 })
 
--- Create tab
-local Tab = Window:MakeTab({
-    Name = "Key Input",
+-- Make the tab for key entry
+local KeyTab = KeyWindow:MakeTab({
+    Name = "Enter Key",
     Icon = "rbxassetid://7734053497",
     PremiumOnly = false
 })
 
--- Create textbox
-Tab:AddTextbox({
-    Name = "Enter Key",
+-- Temporary variable for user input
+local UserInput = ""
+
+-- Textbox for entering key
+KeyTab:AddTextbox({
+    Name = "Type the Key",
     Default = "",
-    TextDisappear = false,
+    TextDisappear = true,
     Callback = function(Value)
-        print("Entered Key: ", Value)
+        UserInput = Value
     end
 })
 
--- Create button
-Tab:AddButton({
-    Name = "Submit Key",
+-- Button to submit key
+KeyTab:AddButton({
+    Name = "Submit",
     Callback = function()
-        OrionLib:MakeNotification({
-            Name = "Notification",
-            Content = "Button Pressed!",
-            Image = "rbxassetid://7733964641",
-            Time = 3
-        })
+        if UserInput == CorrectKey then
+            OrionLib:MakeNotification({
+                Name = "Success",
+                Content = "Correct Key!",
+                Image = "rbxassetid://7733964641",
+                Time = 3
+            })
+
+            -- Wait and destroy current window
+            task.wait(1)
+            KeyWindow:Destroy()
+
+            -- Load Main Hub (Script 2/4)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YoxanXHub/Steal-Brainrot-Hub/main/2.lua"))()
+        else
+            OrionLib:MakeNotification({
+                Name = "Incorrect",
+                Content = "Wrong Key Entered.",
+                Image = "rbxassetid://7733658504",
+                Time = 3
+            })
+        end
     end
 })
