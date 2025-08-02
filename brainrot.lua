@@ -1,44 +1,42 @@
-if game.CoreGui:FindFirstChild("Orion") then
-    game.CoreGui:FindFirstChild("Orion"):Destroy()
-end
+-- KEY SYSTEM (OrionLib Pertama)
+local correctKey = "YoxanxHub Fire"
+local userKey = ""
 
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local Key = "YoxanxHub Fire"
-local EnteredKey = ""
-
-local Window = OrionLib:MakeWindow({
-    Name = "YoxanXHub Key System",
+local OrionKeyLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+local KeyWindow = OrionKeyLib:MakeWindow({
+    Name = "YoxanXHub | Key System",
     HidePremium = false,
     SaveConfig = false,
-    ConfigFolder = "YoxanXHub"
+    ConfigFolder = "YoxanXKey"
 })
 
-local KeyTab = Window:Tab({
+local KeyTab = KeyWindow:Tab({
     Name = "Key",
     Icon = "lock"
 })
 
 KeyTab:AddTextbox({
-    Name = "Enter Key",
+    Name = "Enter your key:",
     Default = "",
     TextDisappear = false,
     Callback = function(Value)
-        EnteredKey = Value
+        userKey = Value
     end
 })
 
 KeyTab:AddButton({
     Name = "Submit",
     Callback = function()
-        if EnteredKey == Key then
-            OrionLib:MakeNotification({
-                Name = "Correct Key",
-                Content = "Access granted. Welcome!",
+        if userKey == correctKey then
+            OrionKeyLib:MakeNotification({
+                Name = "✅ Correct Key!",
+                Content = "Loading YoxanXHub...",
                 Time = 3
             })
 
-            OrionLib:Destroy()
-            wait(1)
+            wait(1.5)
+
+            OrionKeyLib:Destroy() -- Hancurkan UI Key
                 
 -- Reload OrionLib for the main UI
 OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
