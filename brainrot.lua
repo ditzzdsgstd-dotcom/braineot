@@ -53,8 +53,7 @@ KeyTab:AddButton({
                     v:Destroy()
                 end
             end
-
-            })
+        })
 
 -- Script 2/4: Main UI
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
