@@ -185,9 +185,6 @@ VisualTab:AddToggle({
     end
 })
                     
-  -- REQUIRE: OrionLib & Main Window must already exist from 2/4
--- Make sure this runs AFTER 2/4 and reuses the existing Window variable
-
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
@@ -266,7 +263,7 @@ ExtraTab:AddToggle({
 
 -- FLOAT GUI
 ExtraTab:AddButton({
-    Name = "Floating Orion Button",
+    Name = "Floating Button",
     Callback = function()
         local ButtonGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
         ButtonGui.Name = "FloatButton"
@@ -288,13 +285,4 @@ ExtraTab:AddButton({
         end)
     end
 })      
-                 else
-            OrionLib:MakeNotification({
-                Name = "Incorrect",
-                Content = "Wrong Key Entered.",
-                Image = "rbxassetid://7733658504",
-                Time = 3
-            })
-        end
-    end
-})
+                
