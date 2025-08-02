@@ -1,4 +1,4 @@
--- YoxanXHub | Steal a Brainrot (1/3)
+-- YoxanXHub | Steal a Brainrot | Auto Steal + ESP Timer
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
 local Window = OrionLib:MakeWindow({
@@ -15,111 +15,74 @@ local MainTab = Window:MakeTab({
     PremiumOnly = false
 })
 
-MainTab:AddToggle({
-    Name = "Godmode",
-    Default = false,
-    Callback = function(state)
-        local Player = game:GetService("Players").LocalPlayer
-        if state then
-            local Character = Player.Character or Player.CharacterAdded:Wait()
-            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                local Clone = Humanoid:Clone()
-                Clone.Parent = Character
-                Humanoid:Destroy()
-                Clone.Name = "Humanoid"
-                workspace.CurrentCamera.CameraSubject = Clone
+MainTab:AddButton({
+    Name = "Auto Steal",
+    Callback = function()
+        local function decode_constant(encoded)
+            local decoded = {}
+            for i = 1, #encoded do
+                decoded[i] = string.char(string.byte(encoded, i) ~ 0x25)
             end
-        else
-            warn("Reset If You Want Delete GodMode.")
+            return table.concat(decoded)
         end
-    end
-})
 
-MainTab:AddButton({
-    Name = "Rejoin",
-    Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local Players = game:GetService("Players")
-        local Player = Players.LocalPlayer
-        local placeId = game.PlaceId
-        local jobId = game.JobId
-        local success, err = pcall(function()
-            TeleportService:TeleportToPlaceInstance(placeId, jobId, Player)
-        end)
-        if not success then
-            warn("Gagal rejoin:", err)
-            TeleportService:Teleport(placeId, Player)
+        local function load_bytecode(raw_data)
+            local constants, instructions = {}, {}
+            for i, val in ipairs(raw_data.constants) do
+                constants[i] = decode_constant(val)
+            end
+            for i, instr in ipairs(raw_data.instructions) do
+                instructions[i] = {
+                    op = instr[1],
+                    a = instr[2],
+                    b = instr[3],
+                    c = instr[4]
+                }
+            end
+            return constants, instructions
         end
-    end
-})
 
-MainTab:AddButton({
-    Name = "Speed Boost",
-    Callback = function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 94
-    end
-})
-
-MainTab:AddButton({
-    Name = "Instant Steal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Youifpg/Steal-a-Brianrot/refs/heads/main/Slowversion.lua"))()
-    end
-})
-
--- Steal Tab
-local StealTab = Window:MakeTab({
-    Name = "Steal",
-    Icon = "rbxassetid://7734068321",
-    PremiumOnly = false
-})
-
-StealTab:AddButton({
-    Name = "Steal GUI",
-    Callback = function()
-        local ScreenGui = Instance.new("ScreenGui")
-        ScreenGui.Name = "YoxanXHub Steal"
-        ScreenGui.ResetOnSpawn = false
-        ScreenGui.Parent = game.CoreGui
-
-        local ToggleButton = Instance.new("TextButton")
-        ToggleButton.Size = UDim2.new(0, 200, 0, 50)
-        ToggleButton.Position = UDim2.new(0, 20, 0.5, -25)
-        ToggleButton.Text = "Teleport UP: OFF"
-        ToggleButton.TextColor3 = Color3.new(1, 1, 1)
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        ToggleButton.BorderSizePixel = 0
-        ToggleButton.Font = Enum.Font.GothamBold
-        ToggleButton.TextSize = 14
-        ToggleButton.Active = true
-        ToggleButton.Draggable = true
-        ToggleButton.Parent = ScreenGui
-        Instance.new("UICorner", ToggleButton)
-
-        local toggled = false
-        local originalPosition = nil
-
-        ToggleButton.MouseButton1Click:Connect(function()
-            local player = game:GetService("Players").LocalPlayer
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:WaitForChild("HumanoidRootPart")
-
-            if not toggled then
-                originalPosition = hrp.Position
-                hrp.CFrame = hrp.CFrame + Vector3.new(0, 200, 0)
-                ToggleButton.Text = "Teleport UP: ON"
-                toggled = true
-            else
-                if originalPosition then
-                    hrp.CFrame = CFrame.new(originalPosition)
+        local function execute(constants, instructions, env)
+            local ip = 1
+            local stack = {}
+            local function fetch()
+                local instr = instructions[ip]
+                ip += 1
+                return instr
+            end
+            while true do
+                local instr = fetch()
+                local op, a, b, c = instr.op, instr.a, instr.b, instr.c
+                if op == "LOADK" then
+                    stack[a] = constants[b]
+                elseif op == "MOVE" then
+                    stack[a] = stack[b]
+                elseif op == "CALL" then
+                    local func = stack[a]
+                    local args = {}
+                    for i = 1, b do args[i] = stack[a + i] end
+                    local results = {func(table.unpack(args))}
+                    for i = 1, c do stack[a + i - 1] = results[i] end
+                elseif op == "RETURN" then
+                    return
                 else
-                    hrp.CFrame = hrp.CFrame - Vector3.new(0, 200, 0)
+                    warn("Unknown opcode:", op)
                 end
-                ToggleButton.Text = "Teleport UP: OFF"
-                toggled = false
             end
-        end)
+        end
+
+        local bytecode_data = {
+            constants = {"\x6b\x44\x47", "\x58\x4a\x41"}, -- Replace with actual encoded constants
+            instructions = {
+                {"LOADK", 1, 1},
+                {"LOADK", 2, 2},
+                {"CALL", 1, 1, 1},
+                {"RETURN", 0, 0, 0}
+            }
+        }
+
+        local constants, instructions = load_bytecode(bytecode_data)
+        execute(constants, instructions, {})
     end
 })
 
@@ -131,88 +94,148 @@ local VisualTab = Window:MakeTab({
 })
 
 VisualTab:AddToggle({
-    Name = "ESP Players",
+    Name = "ESP: Base Timer",
     Default = false,
     Callback = function(state)
-        local espEnabled = state
+        local runService = game:GetService("RunService")
         local Players = game:GetService("Players")
 
-        local function createESP(player)
-            if player == Players.LocalPlayer then return end
+        local function showTimerAbovePlayer(player)
             local character = player.Character or player.CharacterAdded:Wait()
             local head = character:WaitForChild("Head")
-            if head:FindFirstChild("ESPBox") then return end
 
-            local box = Instance.new("BillboardGui")
-            box.Name = "ESPBox"
-            box.Adornee = head
-            box.Size = UDim2.new(0, 50, 0, 50)
-            box.StudsOffsetWorldSpace = Vector3.new(0, 2, 0)
-            box.AlwaysOnTop = true
-            box.Parent = head
+            local gui = Instance.new("BillboardGui", head)
+            gui.Name = "BaseTimerESP"
+            gui.Size = UDim2.new(0, 100, 0, 40)
+            gui.Adornee = head
+            gui.AlwaysOnTop = true
 
-            local frame = Instance.new("Frame")
-            frame.Size = UDim2.new(1, 0, 1, 0)
-            frame.BackgroundTransparency = 0.8
-            frame.BackgroundColor3 = Color3.new(0, 1, 0)
-            frame.Parent = box
+            local text = Instance.new("TextLabel", gui)
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.TextColor3 = Color3.new(1, 1, 1)
+            text.BackgroundTransparency = 1
+            text.TextStrokeTransparency = 0
+            text.Text = "Timer: 0s"
+            text.TextScaled = true
 
-            local nameLabel = Instance.new("TextLabel")
-            nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
-            nameLabel.Position = UDim2.new(0, 0, -0.5, 0)
-            nameLabel.Text = player.Name
-            nameLabel.TextColor3 = Color3.new(1, 1, 1)
-            nameLabel.BackgroundTransparency = 1
-            nameLabel.TextStrokeColor3 = Color3.new(0,0,0)
-            nameLabel.TextStrokeTransparency = 0
-            nameLabel.Font = Enum.Font.SourceSansBold
-            nameLabel.TextSize = 14
-            nameLabel.Parent = frame
+            local timer = 30
+            local conn = runService.RenderStepped:Connect(function(dt)
+                if not gui or not gui.Parent then
+                    conn:Disconnect()
+                else
+                    timer -= dt
+                    text.Text = string.format("Timer: %ds", math.max(0, math.floor(timer)))
+                end
+            end)
         end
 
-        local function removeESP(player)
-            if player and player.Character then
+        if state then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= Players.LocalPlayer then
+                    showTimerAbovePlayer(p)
+                end
+            end
+        else
+            for _, p in ipairs(Players:GetPlayers()) do
+                local char = p.Character
+                if char and char:FindFirstChild("Head") and char.Head:FindFirstChild("BaseTimerESP") then
+                    char.Head.BaseTimerESP:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- Visual Tab
+local VisualTab = Window:MakeTab({
+    Name = "Visual",
+    Icon = "rbxassetid://7734098371",
+    PremiumOnly = false
+})
+
+VisualTab:AddToggle({
+    Name = "ESP: Name + Body X-Ray",
+    Default = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+
+        local function applyESP(player)
+            if player == Players.LocalPlayer then return end
+            if player.Character and player.Character:FindFirstChild("Head") then
                 local head = player.Character:FindFirstChild("Head")
-                if head and head:FindFirstChild("ESPBox") then
-                    head.ESPBox:Destroy()
+                if not head:FindFirstChild("NameESP") then
+                    -- Billboard Name
+                    local esp = Instance.new("BillboardGui")
+                    esp.Name = "NameESP"
+                    esp.Adornee = head
+                    esp.Size = UDim2.new(0, 100, 0, 20)
+                    esp.StudsOffset = Vector3.new(0, 2, 0)
+                    esp.AlwaysOnTop = true
+                    esp.Parent = head
+
+                    local text = Instance.new("TextLabel")
+                    text.Size = UDim2.new(1, 0, 1, 0)
+                    text.BackgroundTransparency = 1
+                    text.TextColor3 = Color3.new(1, 1, 1)
+                    text.TextStrokeTransparency = 0
+                    text.TextStrokeColor3 = Color3.new(0, 0, 0)
+                    text.TextScaled = true
+                    text.Text = player.Name
+                    text.Font = Enum.Font.GothamBold
+                    text.Parent = esp
+                end
+
+                -- Body X-Ray
+                for _, part in ipairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and not part:FindFirstChild("XRAYBOX") then
+                        local box = Instance.new("BoxHandleAdornment")
+                        box.Name = "XRAYBOX"
+                        box.Adornee = part
+                        box.Size = part.Size
+                        box.Color3 = Color3.fromRGB(0, 255, 0)
+                        box.Transparency = 0.5
+                        box.ZIndex = 5
+                        box.AlwaysOnTop = true
+                        box.Parent = part
+                    end
                 end
             end
         end
 
-        if espEnabled then
-            for _, player in ipairs(Players:GetPlayers()) do
-                createESP(player)
-            end
-        else
-            for _, player in ipairs(Players:GetPlayers()) do
-                removeESP(player)
+        local function clearESP(player)
+            if player.Character then
+                local head = player.Character:FindFirstChild("Head")
+                if head and head:FindFirstChild("NameESP") then
+                    head.NameESP:Destroy()
+                end
+                for _, part in ipairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        local box = part:FindFirstChild("XRAYBOX")
+                        if box then box:Destroy() end
+                    end
+                end
             end
         end
 
-        Players.PlayerAdded:Connect(function(player)
-            if espEnabled then
-                task.delay(1, function()
-                    createESP(player)
+        if state then
+            -- Initial
+            for _, p in pairs(Players:GetPlayers()) do
+                applyESP(p)
+            end
+            -- Updates
+            Players.PlayerAdded:Connect(function(p)
+                p.CharacterAdded:Connect(function()
+                    wait(1)
+                    applyESP(p)
                 end)
+            end)
+        else
+            for _, p in pairs(Players:GetPlayers()) do
+                clearESP(p)
             end
-        end)
-
-        Players.PlayerRemoving:Connect(function(player)
-            removeESP(player)
-        end)
-    end
-})
-
-VisualTab:AddButton({
-    Name = "Show Player Count",
-    Callback = function()
-        local count = #game:GetService("Players"):GetPlayers()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Player Count",
-            Text = "There are " .. count .. " players in the game.",
-            Duration = 5
-        })
         end
+    end
 })
 
 -- Finder Tab
@@ -225,43 +248,14 @@ local FinderTab = Window:MakeTab({
 FinderTab:AddButton({
     Name = "Server Hop",
     Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local Player = game:GetService("Players").LocalPlayer
-        TeleportService:Teleport(game.PlaceId, Player)
+        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
     end
 })
 
 FinderTab:AddButton({
-    Name = "Join Lowest Server",
+    Name = "Join Small Server",
     Callback = function()
-        local HttpService = game:GetService("HttpService")
-        local TeleportService = game:GetService("TeleportService")
-        local PlaceId = game.PlaceId
-        local Player = game.Players.LocalPlayer
-
-        local function GetServers(cursor)
-            local url = "https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-            if cursor then
-                url = url .. "&cursor=" .. cursor
-            end
-            local response = game:HttpGet(url)
-            return HttpService:JSONDecode(response)
-        end
-
-        local found = false
-        local cursor = nil
-        while not found do
-            local data = GetServers(cursor)
-            for _, server in ipairs(data.data) do
-                if server.playing < server.maxPlayers then
-                    TeleportService:TeleportToPlaceInstance(PlaceId, server.id, Player)
-                    found = true
-                    break
-                end
-            end
-            cursor = data.nextPageCursor
-            if not cursor then break end
-        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/YoxanXHub/Assets/main/small_server.lua"))()
     end
 })
 
@@ -276,7 +270,13 @@ InfoTab:AddButton({
     Name = "Join Discord",
     Callback = function()
         setclipboard("https://discord.gg/Az8Cm2F6")
+        OrionLib:MakeNotification({
+            Name = "Discord Copied",
+            Content = "Link discord telah disalin ke clipboard!",
+            Image = "rbxassetid://7734053497",
+            Time = 5
+        })
     end
 })
 
-InfoTab:AddParagraph("YoxanXHub", "Discord: YoxanXHub\nScript Version: 1.1.0 Beta")
+InfoTab:AddParagraph("YoxanXHub", "Discord : YoxanXHub")
