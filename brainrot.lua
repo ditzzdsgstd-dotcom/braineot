@@ -1,40 +1,52 @@
--- OrionLib by Nightmare
+-- OrionLib dari nightmare
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Set your custom key
-local correctKey = "YoxanxHub Fire"
-
--- Temporary window for key input
+-- Buat jendela Key System
 local KeyWindow = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
     SaveConfig = false
 })
 
--- Key Tab
-local KeyTab = KeyWindow:Tab({
-    Name = "Enter Key",
-    Icon = "key"
+-- Key yang benar
+local correctKey = "YoxanxHub Fire"
+
+-- Variabel untuk menampung input
+local inputKey = ""
+
+-- Buat tab untuk input key
+local KeyTab = KeyWindow:MakeTab({
+    Name = "Key Input",
+    Icon = "rbxassetid://7733658504",
+    PremiumOnly = false
 })
 
--- Textbox for input
-KeyTab:Textbox({
-    Name = "Key Input",
+-- Textbox untuk isi key
+KeyTab:AddTextbox({
+    Name = "Enter Key",
     Default = "",
-    TextDisappear = false,
-    Callback = function(input)
-        if input == correctKey then
+    TextDisappear = true,
+    Callback = function(value)
+        inputKey = value
+    end
+})
+
+-- Tombol cek key
+KeyTab:AddButton({
+    Name = "Check Key",
+    Callback = function()
+        if inputKey == correctKey then
             OrionLib:MakeNotification({
-                Name = "Access Granted",
-                Content = "Correct key! Loading YoxanXHub...",
+                Name = "Correct Key!",
+                Content = "Access Granted to YoxanXHub.",
                 Image = "rbxassetid://4483345998",
-                Time = 4
+                Time = 5
             })
 
             wait(1)
             KeyWindow:Destroy()
 
-            -- Main UI after correct key
+            -- Buka UI utama
             local MainWindow = OrionLib:MakeWindow({
                 Name = "YoxanXHub - Steal a Brainrot",
                 HidePremium = false,
@@ -44,17 +56,17 @@ KeyTab:Textbox({
 
             MainWindow:MakeNotification({
                 Name = "Welcome!",
-                Content = "Enjoy using YoxanXHub!",
+                Content = "YoxanXHub Loaded Successfully!",
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
 
-            -- Continue with Script 2/3 and 3/3 here...
+            -- lanjutkan script 2/3 dan 3/3 di sini...
 
         else
             OrionLib:MakeNotification({
                 Name = "Invalid Key",
-                Content = "The key you entered is incorrect.",
+                Content = "Key is incorrect. Try again.",
                 Image = "rbxassetid://4483345998",
                 Time = 4
             })
