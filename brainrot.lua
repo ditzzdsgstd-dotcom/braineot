@@ -1,14 +1,13 @@
--- Wait until the game is fully loaded
+-- Wait for game to load
 repeat task.wait() until game:IsLoaded()
 
 -- Load OrionLib (Nightmare version)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Define correct key
+-- Correct key
 local CorrectKey = "YoxanXFree"
-local InputKey = ""
 
--- Create the initial key window
+-- Make the key input window
 local KeyWindow = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
@@ -16,98 +15,57 @@ local KeyWindow = OrionLib:MakeWindow({
     ConfigFolder = "YoxanXKey"
 })
 
--- Create tab for key input
+-- Create key tab
 local KeyTab = KeyWindow:MakeTab({
-    Name = "Key",
+    Name = "Enter Key",
     Icon = "rbxassetid://7734053497",
     PremiumOnly = false
 })
 
--- Textbox for entering the key
+-- Input variable
+local UserInput = ""
+
+-- Textbox input
 KeyTab:AddTextbox({
-    Name = "Enter Key",
+    Name = "Type the Key",
     Default = "",
     TextDisappear = true,
-    Callback = function(value)
-        InputKey = value
+    Callback = function(Value)
+        UserInput = Value
     end
 })
 
--- Button to validate key
+-- Submit button
 KeyTab:AddButton({
-    Name = "Submit Key",
+    Name = "Submit",
     Callback = function()
-        if InputKey == CorrectKey then
+        if UserInput == CorrectKey then
             OrionLib:MakeNotification({
-                Name = "Correct Key",
-                Content = "Access granted to YoxanXHub.",
+                Name = "Success",
+                Content = "Correct Key!",
                 Image = "rbxassetid://7733964641",
                 Time = 3
             })
 
             task.wait(1)
 
-            -- Destroy previous Orion UI
-            for _, v in pairs(game.CoreGui:GetChildren()) do
-                if v.Name == "Orion" then
-                    v:Destroy()
-                end
-            end
-        })
+            -- Destroy Key UI
+            KeyWindow:Destroy()
 
--- Script 2/4: Main UI
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local Window = OrionLib:MakeWindow({
-    Name = "YoxanXHub",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "YoxanXHub"
-})
+            -- Reload Orion for main UI
+            local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+            local Window = OrionLib:MakeWindow({
+                Name = "YoxanXHub | Steal A Brainrot",
+                HidePremium = false,
+                SaveConfig = true,
+                ConfigFolder = "YoxanXHub"
+            })
 
--- Main Tab
-local MainTab = Window:MakeTab({
-    Name = "Main",
-    Icon = "rbxassetid://7733760620",
-    PremiumOnly = false
-})
-
--- Godmode Toggle
-MainTab:AddToggle({
-    Name = "Godmode",
-    Default = false,
-    Callback = function(state)
-        local Player = game:GetService("Players").LocalPlayer
-        if state then
-            local Character = Player.Character or Player.CharacterAdded:Wait()
-            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                local Clone = Humanoid:Clone()
-                Clone.Parent = Character
-                Humanoid:Destroy()
-                Clone.Name = "Humanoid"
-                workspace.CurrentCamera.CameraSubject = Clone
-            end
-        else
-            warn("To disable Godmode, manually reset your character.")
-        end
-    end
-})
-
--- Rejoin Button
-MainTab:AddButton({
-    Name = "Rejoin Server",
-    Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local Players = game:GetService("Players")
-        local Player = Players.LocalPlayer
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
-    end
-})
-                
+            -- NOTE: You can now continue Script 2/4 after this manually
         else
             OrionLib:MakeNotification({
-                Name = "Wrong Key",
-                Content = "The key is incorrect. Try again.",
+                Name = "Incorrect",
+                Content = "Wrong Key Entered.",
                 Image = "rbxassetid://7733658504",
                 Time = 3
             })
