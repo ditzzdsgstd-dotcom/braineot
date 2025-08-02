@@ -1,4 +1,3 @@
-})
                 
 -- Reload OrionLib for the main UI
 OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
