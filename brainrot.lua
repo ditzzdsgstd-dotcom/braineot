@@ -9,7 +9,7 @@ local UserInput = ""
 
 -- Create Key UI Window
 local KeyWindow = OrionLib:MakeWindow({
-    Name = "YoxanXHub | Key System",
+    Name = "YoxanXHub | KeyY System",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = "YoxanXKey"
