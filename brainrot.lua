@@ -31,7 +31,7 @@ MainTab:AddToggle({
                 workspace.CurrentCamera.CameraSubject = Clone
             end
         else
-            warn("Matikan godmode manual dengan reset.")
+            warn("Reset If You Want Delete GodMode.")
         end
     end
 })
@@ -74,13 +74,6 @@ MainTab:AddButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Youifpg/Steal-a-Brianrot/main/float.lua"))()
     end
 })
-
-Berikut adalah Bagian 2/3 dari script YoxanXHub | Steal a Brainrot — yaitu isi dari Tab Steal dan Tab Visual:
-
-
----
-
-✅ OrionLib Script (Bagian 2/3 – Tab Steal & Visual)
 
 -- Steal Tab
 local StealTab = Window:MakeTab({
