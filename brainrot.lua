@@ -1,267 +1,375 @@
-                
--- Reload OrionLib for the main UI
-OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+-- Load OrionLib from Nightmare
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Main UI Window
+local CorrectKey = "YoxanxHub Fire"
+local userKey = ""
+
+-- Create Window
 local Window = OrionLib:MakeWindow({
-    Name = "YoxanXHub | Steal a Brainrot",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "YoxanXHub"
+	Name = "YoxanxHub | Key System",
+	HidePremium = false,
+	SaveConfig = false,
+	ConfigFolder = "YoxanxHubKey"
 })
 
-OrionLib:MakeNotification({
-    Name = "YoxanXHub",
-    Content = "Script loaded successfully!",
-    Time = 3
+-- Key Tab
+local KeyTab = Window:Tab({
+	Name = "🔑 Enter Key",
+	Icon = "key"
 })
 
--- Main Functional Tab
+-- Input field
+KeyTab:Textbox({
+	Name = "Enter Your Key",
+	Default = "",
+	Placeholder = "Type your key...",
+	Callback = function(value)
+		userKey = value
+	end
+})
+
+-- Submit button
+KeyTab:Button({
+	Name = "🔓 Submit Key",
+	Callback = function()
+		if userKey == CorrectKey then
+			OrionLib:MakeNotification({
+				Name = "✅ Access Granted",
+				Content = "Welcome to YoxanxHub!",
+				Image = "rbxassetid://7733964641",
+				Time = 4
+			})
+
+			wait(1)
+			OrionLib:Destroy()
+
+			-- Paste 2/3 features script here
+
+		else
+			OrionLib:MakeNotification({
+				Name = "❌ Invalid Key",
+				Content = "Wrong key, try again.",
+				Image = "rbxassetid://7733964641",
+				Time = 4
+			})
+		end
+	end
+})
+
+-- Discord Invite Button
+KeyTab:Button({
+	Name = "📋 Copy Discord Invite",
+	Callback = function()
+		setclipboard("https://discord.gg/Az8Cm2F6")
+		OrionLib:MakeNotification({
+			Name = "📎 Copied",
+			Content = "Discord link copied to clipboard.",
+			Image = "rbxassetid://7733964641",
+			Time = 3
+		})
+	end
+})
+
+-- Re-create OrionLib after key UI destroyed
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+local Window = OrionLib:MakeWindow({
+	Name = "YoxanxHub | Main",
+	HidePremium = false,
+	SaveConfig = true,
+	ConfigFolder = "YoxanxHubMain"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Main Tab
 local MainTab = Window:Tab({
-    Name = "Main",
-    Icon = "settings"
+	Name = "🛠 Main",
+	Icon = "settings"
 })
 
 -- Godmode
 MainTab:Toggle({
-    Title = "Godmode",
-    Desc = "Makes your character immortal (reset to disable)",
-    Default = false,
-    Callback = function(state)
-        local Player = game:GetService("Players").LocalPlayer
-        if state then
-            local Char = Player.Character or Player.CharacterAdded:Wait()
-            local Humanoid = Char:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                local Clone = Humanoid:Clone()
-                Clone.Parent = Char
-                Humanoid:Destroy()
-                Clone.Name = "Humanoid"
-                workspace.CurrentCamera.CameraSubject = Clone
-            end
-        else
-            warn("To disable Godmode, reset your character manually.")
-        end
-    end
+	Name = "Godmode",
+	Default = false,
+	Callback = function(state)
+		if state then
+			local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then
+				local clone = hum:Clone()
+				clone.Parent = char
+				hum:Destroy()
+				clone.Name = "Humanoid"
+				workspace.CurrentCamera.CameraSubject = clone
+			end
+		end
+	end
 })
 
--- Rejoin Current Server
+-- Rejoin
 MainTab:Button({
-    Title = "Rejoin Server",
-    Desc = "Rejoins the current game server (after godmode)",
-    Callback = function()
-        local ts = game:GetService("TeleportService")
-        local player = game.Players.LocalPlayer
-        pcall(function()
-            ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-        end)
-    end
+	Name = "Rejoin Server",
+	Callback = function()
+		local TeleportService = game:GetService("TeleportService")
+		local PlaceId = game.PlaceId
+		local JobId = game.JobId
+		TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
+	end
+})
+
+-- Fly
+local flying = false
+local flyConn
+MainTab:Toggle({
+	Name = "Fly (PC Only)",
+	Default = false,
+	Callback = function(state)
+		flying = state
+		local char = LocalPlayer.Character
+		if not char then return end
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		local hum = char:FindFirstChildWhichIsA("Humanoid")
+		if not (hrp and hum) then return end
+		hum.PlatformStand = state
+		if flyConn then flyConn:Disconnect() end
+		if flying then
+			flyConn = RunService.RenderStepped:Connect(function()
+				local move = hum.MoveDirection * 40
+				if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+					move = move + Vector3.new(0, 40, 0)
+				end
+				if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.X) then
+					move = move + Vector3.new(0, -40, 0)
+				end
+				hrp.Velocity = move
+			end)
+		else
+			if flyConn then flyConn:Disconnect() end
+			hrp.Velocity = Vector3.zero
+			hum.PlatformStand = false
+		end
+	end
 })
 
 -- Infinite Jump
+local ijEnabled = false
+local ijConn
 MainTab:Toggle({
-    Title = "Infinite Jump",
-    Desc = "Allows you to jump infinitely",
-    Default = false,
-    Callback = function(state)
-        local UIS = game:GetService("UserInputService")
-        local Player = game.Players.LocalPlayer
-        local Char = Player.Character or Player.CharacterAdded:Wait()
-        local Humanoid = Char:FindFirstChildOfClass("Humanoid")
-        if state then
-            _G.InfiniteJump = UIS.JumpRequest:Connect(function()
-                if Humanoid then
-                    Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-            end)
-        else
-            if _G.InfiniteJump then _G.InfiniteJump:Disconnect() end
-        end
-    end
+	Name = "Infinite Jump",
+	Default = false,
+	Callback = function(state)
+		ijEnabled = state
+		if ijConn then ijConn:Disconnect() end
+		if ijEnabled then
+			ijConn = UserInputService.JumpRequest:Connect(function()
+				local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+				local hum = char:FindFirstChildOfClass("Humanoid")
+				if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+			end)
+		end
+	end
 })
 
--- Force Reset
+-- Reset
 MainTab:Button({
-    Title = "Reset Character",
-    Desc = "Forces your character to reset",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local char = player.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.Health = 0
-        end
-    end
+	Name = "Force Reset",
+	Callback = function()
+		local char = LocalPlayer.Character
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		if hum then hum.Health = 0 end
+	end
 })
 
--- Visual Tab
+-- Hitbox ESP
+local espEnabled = false
+local espConnections = {}
+function clearESP()
+	for _, adorn in pairs(espConnections) do
+		if adorn then adorn:Destroy() end
+	end
+	table.clear(espConnections)
+end
+
+function createESPForPlayer(plr)
+	if plr == LocalPlayer then return end
+	local char = plr.Character
+	if not char then return end
+	for _, part in pairs(char:GetChildren()) do
+		if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Adornee = part
+			box.AlwaysOnTop = true
+			box.ZIndex = 10
+			box.Size = part.Size
+			box.Transparency = 0.5
+			box.Color3 = Color3.fromRGB(255, 0, 170)
+			box.Parent = part
+			table.insert(espConnections, box)
+		end
+	end
+end
+
+MainTab:Toggle({
+	Name = "ESP Hitbox Players",
+	Default = false,
+	Callback = function(state)
+		espEnabled = state
+		clearESP()
+		if espEnabled then
+			for _, plr in pairs(Players:GetPlayers()) do
+				createESPForPlayer(plr)
+			end
+		end
+	end
+})
+
+Players.PlayerAdded:Connect(function(plr)
+	if espEnabled then
+		plr.CharacterAdded:Connect(function()
+			wait(1)
+			createESPForPlayer(plr)
+		end)
+	end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+	if espEnabled then
+		clearESP()
+	end
+end)
+
+-- Visual Tab (continued from existing OrionLib Window)
 local VisualTab = Window:Tab({
-    Name = "Visual",
+    Title = "Visual",
     Icon = "eye"
 })
 
--- ESP Timer: Show Base Open Countdown
+-- Auto Steal
 VisualTab:Toggle({
-    Title = "Show Base Timer",
-    Desc = "Displays countdown until base opens above it",
+    Title = "Auto Steal",
+    Desc = "Automatically steals the nearest brainrot every second",
     Default = false,
-    Callback = function(state)
-        local function updateTimers()
-            for _, base in ipairs(workspace:GetDescendants()) do
-                if base:IsA("Model") and base:FindFirstChild("OpenTimer") then
-                    local head = base:FindFirstChild("Head") or base:FindFirstChildWhichIsA("BasePart")
-                    if head then
-                        if state then
-                            if not head:FindFirstChild("TimerBillboard") then
-                                local billboard = Instance.new("BillboardGui", head)
-                                billboard.Name = "TimerBillboard"
-                                billboard.Size = UDim2.new(0, 100, 0, 40)
-                                billboard.StudsOffset = Vector3.new(0, 3, 0)
-                                billboard.AlwaysOnTop = true
-
-                                local label = Instance.new("TextLabel", billboard)
-                                label.Size = UDim2.new(1, 0, 1, 0)
-                                label.BackgroundTransparency = 1
-                                label.TextColor3 = Color3.fromRGB(255, 255, 0)
-                                label.TextStrokeTransparency = 0
-                                label.TextScaled = true
-                                label.Font = Enum.Font.GothamBold
-                                label.Name = "TimerLabel"
-                            end
-                        else
-                            if head:FindFirstChild("TimerBillboard") then
-                                head.TimerBillboard:Destroy()
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        game:GetService("RunService").RenderStepped:Connect(function()
-            if state then
-                for _, base in ipairs(workspace:GetDescendants()) do
-                    if base:IsA("Model") and base:FindFirstChild("OpenTimer") then
-                        local head = base:FindFirstChild("Head") or base:FindFirstChildWhichIsA("BasePart")
-                        if head and head:FindFirstChild("TimerBillboard") then
-                            local timer = base.OpenTimer
-                            local label = head.TimerBillboard:FindFirstChild("TimerLabel")
-                            if label then
-                                label.Text = tostring(math.floor(timer.Value)) .. "s"
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-
-        updateTimers()
-    end
-})
-
--- ESP Player (Body + Name)
-VisualTab:Toggle({
-    Title = "ESP Player",
-    Desc = "Highlights all player bodies and names",
-    Default = false,
-    Callback = function(state)
-        local Players = game:GetService("Players")
-        local function createESP(player)
-            if player == Players.LocalPlayer then return end
-            local char = player.Character
-            if not char then return end
-
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") and not part:FindFirstChild("XRay") then
-                    local box = Instance.new("BoxHandleAdornment", part)
-                    box.Name = "XRay"
-                    box.Adornee = part
-                    box.AlwaysOnTop = true
-                    box.ZIndex = 10
-                    box.Size = part.Size + Vector3.new(0.05, 0.05, 0.05)
-                    box.Transparency = 0.5
-                    box.Color3 = Color3.fromRGB(0, 255, 0)
-                end
-            end
-
-            local head = char:FindFirstChild("Head")
-            if head and not head:FindFirstChild("NameTag") then
-                local billboard = Instance.new("BillboardGui", head)
-                billboard.Name = "NameTag"
-                billboard.Size = UDim2.new(0, 100, 0, 40)
-                billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-                billboard.AlwaysOnTop = true
-
-                local text = Instance.new("TextLabel", billboard)
-                text.Size = UDim2.new(1, 0, 1, 0)
-                text.BackgroundTransparency = 1
-                text.Text = player.Name
-                text.TextColor3 = Color3.new(1, 1, 1)
-                text.TextStrokeColor3 = Color3.new(0, 0, 0)
-                text.TextStrokeTransparency = 0
-                text.TextScaled = true
-                text.Font = Enum.Font.GothamBold
-            end
-        end
-
-        local function clearESP(player)
-            local char = player.Character
-            if not char then return end
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    if part:FindFirstChild("XRay") then
-                        part.XRay:Destroy()
-                    end
-                end
-            end
-            local head = char:FindFirstChild("Head")
-            if head and head:FindFirstChild("NameTag") then
-                head.NameTag:Destroy()
-            end
-        end
-
-        for _, p in ipairs(Players:GetPlayers()) do
-            if state then
-                createESP(p)
-            else
-                clearESP(p)
-            end
-        end
-
-        Players.PlayerAdded:Connect(function(p)
-            p.CharacterAdded:Connect(function()
-                if state then
-                    wait(1)
-                    createESP(p)
-                end
-            end)
-        end)
-
-        Players.PlayerRemoving:Connect(function(p)
-            clearESP(p)
-        end)
-    end
-})
-
--- Auto Steal (Experimental)
-VisualTab:Button({
-    Title = "Auto Steal (Beta)",
-    Desc = "Tries to steal nearby open brainrot bases automatically",
-    Callback = function()
+    Callback = function(enabled)
+        local RunService = game:GetService("RunService")
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
-        local function trySteal()
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("ProximityPrompt") and obj.Enabled and obj.Parent and obj.Parent:FindFirstChild("OpenTimer") then
-                    if obj.Parent.OpenTimer.Value <= 1 then
-                        fireproximityprompt(obj)
+        local StealConnection
+
+        if enabled then
+            StealConnection = RunService.RenderStepped:Connect(function()
+                local closest
+                local shortest = math.huge
+                for _, npc in pairs(workspace:GetDescendants()) do
+                    if npc.Name == "Brainrot" and npc:FindFirstChild("Head") then
+                        local distance = (npc.Head.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                        if distance < shortest then
+                            closest = npc
+                            shortest = distance
+                        end
                     end
                 end
+
+                if closest and closest:FindFirstChild("Head") then
+                    firetouchinterest(LocalPlayer.Character.HumanoidRootPart, closest.Head, 0)
+                    wait(0.05)
+                    firetouchinterest(LocalPlayer.Character.HumanoidRootPart, closest.Head, 1)
+                end
+            end)
+        else
+            if StealConnection then StealConnection:Disconnect() end
+        end
+    end
+})
+
+-- Base Timer ESP
+VisualTab:Toggle({
+    Title = "Base Timer ESP",
+    Desc = "Show timer for base opening",
+    Default = false,
+    Callback = function(state)
+        local billboardName = "BaseTimerESP"
+        if state then
+            local gui = Instance.new("BillboardGui")
+            gui.Name = billboardName
+            gui.Size = UDim2.new(0, 100, 0, 40)
+            gui.StudsOffset = Vector3.new(0, 3, 0)
+            gui.AlwaysOnTop = true
+            gui.Parent = game.CoreGui
+
+            local label = Instance.new("TextLabel", gui)
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.TextColor3 = Color3.new(1, 1, 1)
+            label.TextScaled = true
+            label.Font = Enum.Font.GothamBold
+            label.Text = "..."
+
+            local RunService = game:GetService("RunService")
+            local basePart = workspace:FindFirstChild("BaseTimerPart") or workspace:FindFirstChildWhichIsA("Part")
+
+            gui.Adornee = basePart
+
+            gui:SetAttribute("Running", true)
+
+            spawn(function()
+                while gui:GetAttribute("Running") do
+                    local timeLeft = basePart:FindFirstChild("TimeLeft")
+                    if timeLeft and timeLeft:IsA("NumberValue") then
+                        label.Text = "Base opens in: " .. math.floor(timeLeft.Value) .. "s"
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            local gui = game.CoreGui:FindFirstChild(billboardName)
+            if gui then
+                gui:SetAttribute("Running", false)
+                gui:Destroy()
             end
         end
+    end
+})
 
-        while task.wait(1) do
-            pcall(trySteal)
+-- X-Ray ESP for Players
+VisualTab:Toggle({
+    Title = "X-Ray Players",
+    Desc = "See all players through walls",
+    Default = false,
+    Callback = function(state)
+        local players = game:GetService("Players")
+        local localPlayer = players.LocalPlayer
+        local adorns = {}
+
+        local function highlightCharacter(char)
+            if not char or char == localPlayer.Character then return end
+            local highlight = Instance.new("Highlight")
+            highlight.FillColor = Color3.fromRGB(255, 255, 255)
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.Adornee = char
+            highlight.Parent = game.CoreGui
+            table.insert(adorns, highlight)
+        end
+
+        if state then
+            for _, plr in pairs(players:GetPlayers()) do
+                if plr ~= localPlayer and plr.Character then
+                    highlightCharacter(plr.Character)
+                end
+                plr.CharacterAdded:Connect(function(char)
+                    task.wait(1)
+                    highlightCharacter(char)
+                end)
+            end
+        else
+            for _, adorn in ipairs(adorns) do
+                if adorn then adorn:Destroy() end
+            end
+            table.clear(adorns)
         end
     end
 })
