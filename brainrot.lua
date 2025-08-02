@@ -104,8 +104,6 @@ MainTab:AddButton({
         TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
     end
 })
-		
-})
                 
         else
             OrionLib:MakeNotification({
