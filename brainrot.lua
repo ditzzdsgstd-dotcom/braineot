@@ -1,43 +1,45 @@
--- KEY SYSTEM (YoxanxHub Fire)
-if game:GetService("CoreGui"):FindFirstChild("OrionKeyUI") then
-    game:GetService("CoreGui").OrionKeyUI:Destroy()
+if game.CoreGui:FindFirstChild("Orion") then
+    game.CoreGui:FindFirstChild("Orion"):Destroy()
 end
 
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+local Key = "YoxanxHub Fire"
+local EnteredKey = ""
 
-OrionLib:MakeWindow({
+local Window = OrionLib:MakeWindow({
     Name = "YoxanXHub Key System",
     HidePremium = false,
     SaveConfig = false,
-    ConfigFolder = "YoxanXKey",
-    IntroEnabled = true,
-    IntroText = "YoxanXHub Loading...",
-    IntroIcon = "rbxassetid://7733964641" -- Optional icon
+    ConfigFolder = "YoxanXHub"
 })
 
-local correctKey = "YoxanxHub Fire"
-
-OrionLib:MakeNotification({
-    Name = "Key Required",
-    Content = "Enter the key to unlock the script.",
-    Image = "rbxassetid://7733964641",
-    Time = 6
+local KeyTab = Window:Tab({
+    Name = "Key",
+    Icon = "lock"
 })
 
-OrionLib:MakeKeySystem({
-    Title = "YoxanXHub Key",
-    Subtitle = "Key is: YoxanxHub Fire",
-    Note = "Join discord.gg/HQ8WqhxQ for key info",
-    FileName = "YoxanxKeySave",
-    SaveKey = false,
-    GrabKeyFromSite = false,
-    Key = correctKey,
-    Callback = function()
-        OrionLib:Destroy() -- Destroy the key UI window
-        loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_PART2"))() -- Ganti ini ke link script 2/3
+KeyTab:AddTextbox({
+    Name = "Enter Key",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(Value)
+        EnteredKey = Value
     end
 })
 
+KeyTab:AddButton({
+    Name = "Submit",
+    Callback = function()
+        if EnteredKey == Key then
+            OrionLib:MakeNotification({
+                Name = "Correct Key",
+                Content = "Access granted. Welcome!",
+                Time = 3
+            })
+
+            OrionLib:Destroy()
+            wait(1)
+                
 -- Reload OrionLib for the main UI
 OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
