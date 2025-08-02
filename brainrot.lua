@@ -20,22 +20,6 @@ local DeviceTab = Window:Tab({
     Icon = "monitor"
 })
 
-DeviceTab:Dropdown({
-    Name = "Select Your Device",
-    Default = "PC",
-    Options = {"PC", "Mobile"},
-    Callback = function(selected)
-        if selected == "Mobile" then
-            OrionLib:MakeNotification({
-                Name = "Note",
-                Content = "Mobile scaling not applied (currently cosmetic only).",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    end
-})
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
