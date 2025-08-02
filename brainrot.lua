@@ -6,8 +6,9 @@ local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig
 
 -- Correct key
 local CorrectKey = "YoxanXFree"
+local UserInput = ""
 
--- Make the key input window
+-- Key input window
 local KeyWindow = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
@@ -15,17 +16,14 @@ local KeyWindow = OrionLib:MakeWindow({
     ConfigFolder = "YoxanXKey"
 })
 
--- Create key tab
+-- Key input tab
 local KeyTab = KeyWindow:MakeTab({
     Name = "Enter Key",
     Icon = "rbxassetid://7734053497",
     PremiumOnly = false
 })
 
--- Input variable
-local UserInput = ""
-
--- Textbox input
+-- Textbox
 KeyTab:AddTextbox({
     Name = "Type the Key",
     Default = "",
@@ -47,21 +45,23 @@ KeyTab:AddButton({
                 Time = 3
             })
 
-            task.wait(1)
+            task.delay(0.5, function()
+                -- Completely reload OrionLib after destroying UI
+                KeyWindow:Destroy()
+                OrionLib = nil
+                task.wait(0.5)
 
-            -- Destroy Key UI
-            KeyWindow:Destroy()
+                OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+                _G.MainWindow = OrionLib:MakeWindow({
+                    Name = "YoxanXHub | STEAL A BRAINROT",
+                    HidePremium = false,
+                    SaveConfig = true,
+                    ConfigFolder = "YoxanXHub"
+                })
 
-            -- Reload Orion for main UI
-            local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-            local Window = OrionLib:MakeWindow({
-                Name = "YoxanXHub | Steal A Brainrot",
-                HidePremium = false,
-                SaveConfig = true,
-                ConfigFolder = "YoxanXHub"
-            })
+                -- 🟩 You can now continue from script 2/4 using: _G.MainWindow
+            end)
 
-            -- NOTE: You can now continue Script 2/4 after this manually
         else
             OrionLib:MakeNotification({
                 Name = "Incorrect",
