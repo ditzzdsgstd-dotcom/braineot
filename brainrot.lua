@@ -9,74 +9,47 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "YoxanXHub"
 })
 
--- // Key System
+local correctKey = "LACAZETTE"
+local isValidated = false
+
 OrionLib:MakeNotification({
-    Name = "YoxanXHub",
-    Content = "Copy key from discord.gg/Az8Cm2F6",
-    Image = "rbxassetid://4483345998",
+    Name = "Key Required",
+    Content = "Please enter your key to unlock YoxanXHub.",
+    Image = "rbxassetid://7733960981",
     Time = 8
-})
-
-OrionLib:MakeNotification({
-    Name = "YoxanXHub",
-    Content = "Script Loading...",
-    Time = 4
-})
-
-OrionLib:MakeNotification({
-    Name = "Key System",
-    Content = "Checking key...",
-    Time = 2
-})
-
-local CorrectKey = "LACAZETTE"
-
-OrionLib:MakeNotification({
-    Name = "Enter Key",
-    Content = "Press RightShift to open UI and enter key",
-    Time = 5
 })
 
 local KeyTab = Window:Tab({
     Name = "Key System",
-    Icon = "key",
-    PremiumOnly = false
+    Icon = "lock"
 })
 
 KeyTab:AddTextbox({
     Name = "Enter Key",
     Default = "",
     TextDisappear = false,
-    Callback = function(Value)
-        if Value == CorrectKey then
+    Callback = function(input)
+        if input == correctKey then
             OrionLib:MakeNotification({
-                Name = "Access Granted",
-                Content = "Welcome to YoxanXHub!",
-                Image = "rbxassetid://4483345998",
+                Name = "Key Accepted",
+                Content = "Access granted. Welcome to YoxanXHub!",
+                Image = "rbxassetid://7733960981",
                 Time = 5
             })
+            isValidated = true
         else
             OrionLib:MakeNotification({
-                Name = "Incorrect Key",
-                Content = "Join Discord for the correct key!",
-                Image = "rbxassetid://4483345998",
+                Name = "Invalid Key",
+                Content = "The key you entered is not valid.",
+                Image = "rbxassetid://7734053494",
                 Time = 5
             })
         end
     end
 })
 
-KeyTab:AddButton({
-    Name = "Copy Discord",
-    Callback = function()
-        setclipboard("https://discord.gg/Az8Cm2F6")
-        OrionLib:MakeNotification({
-            Name = "Copied!",
-            Content = "Discord link copied to clipboard.",
-            Time = 3
-        })
-    end
-})
+-- Wait for valid key before continuing the script
+repeat task.wait() until isValidated
 
 -- Continuing from the previous script (no new window)
 
