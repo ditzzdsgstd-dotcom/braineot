@@ -1,75 +1,65 @@
--- OrionLib dari nightmare
+--// Load OrionLib (Nightmare Version)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Buat jendela Key System
-local KeyWindow = OrionLib:MakeWindow({
-    Name = "YoxanXHub | Key System",
+--// Setup Window for Key System
+local Window = OrionLib:MakeWindow({
+    Name = "YoxanxHub | Key System",
     HidePremium = false,
-    SaveConfig = false
+    SaveConfig = false,
+    ConfigFolder = "YoxanxHubKey"
 })
 
--- Key yang benar
-local correctKey = "YoxanxHub Fire"
+--// Key Variable
+local CorrectKey = "YoxanxHub Fire"
+_G.UserKeyInput = ""
 
--- Variabel untuk menampung input
-local inputKey = ""
+--// Notification Function
+local function Notify(title, content)
+    OrionLib:MakeNotification({
+        Name = title,
+        Content = content,
+        Image = "rbxassetid://7733964641",
+        Time = 4
+    })
+end
 
--- Buat tab untuk input key
-local KeyTab = KeyWindow:MakeTab({
-    Name = "Key Input",
-    Icon = "rbxassetid://7733658504",
-    PremiumOnly = false
+--// Key Tab
+local KeyTab = Window:Tab({
+    Name = "🔐 Key Verification",
+    Icon = "key"
 })
 
--- Textbox untuk isi key
 KeyTab:AddTextbox({
     Name = "Enter Key",
     Default = "",
-    TextDisappear = true,
+    TextDisappear = false,
     Callback = function(value)
-        inputKey = value
+        _G.UserKeyInput = value
     end
 })
 
--- Tombol cek key
 KeyTab:AddButton({
-    Name = "Check Key",
+    Name = "Submit Key",
     Callback = function()
-        if inputKey == correctKey then
-            OrionLib:MakeNotification({
-                Name = "Correct Key!",
-                Content = "Access Granted to YoxanXHub.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+        if _G.UserKeyInput == CorrectKey then
+            Notify("✅ Access Granted", "Correct Key! Loading YoxanxHub...")
+            OrionLib:Destroy() -- Destroy the key UI
+            task.wait(1)
 
-            wait(1)
-            KeyWindow:Destroy()
-
-            -- Buka UI utama
-            local MainWindow = OrionLib:MakeWindow({
-                Name = "YoxanXHub - Steal a Brainrot",
+            -- Reload OrionLib & Start Script 2/4
+            local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+            local Window = OrionLib:MakeWindow({
+                Name = "YoxanxHub",
                 HidePremium = false,
                 SaveConfig = true,
-                ConfigFolder = "YoxanXHub"
+                ConfigFolder = "YoxanxHub"
             })
 
-            MainWindow:MakeNotification({
-                Name = "Welcome!",
-                Content = "YoxanXHub Loaded Successfully!",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+            _G.YoxanxWindow = Window -- Save the Window globally for use in other parts
 
-            -- lanjutkan script 2/3 dan 3/3 di sini...
-
+            -- Ready for Script 2/4 to continue from here
         else
-            OrionLib:MakeNotification({
-                Name = "Invalid Key",
-                Content = "Key is incorrect. Try again.",
-                Image = "rbxassetid://4483345998",
-                Time = 4
-            })
+            Notify("❌ Incorrect Key", "Try again or get the correct key from Discord.")
         end
     end
 })
