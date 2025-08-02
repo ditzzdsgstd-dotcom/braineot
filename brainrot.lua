@@ -1,74 +1,46 @@
--- Wait for game load
+-- Wait until game fully loads
 repeat task.wait() until game:IsLoaded()
 
--- Load OrionLib from Nightmare
+-- Load OrionLib (dari Nightmare)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Add a short delay to make sure GUI renders properly
+-- Delay supaya UI bisa tampil normal
 task.wait(0.5)
 
--- Create Key System Window
-local KeyWindow = OrionLib:MakeWindow({
+-- Create the window
+local Window = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = "YoxanXKey"
 })
 
--- Your key setup
-local CorrectKey = "YoxanxHub Fire"
-_G.EnteredKey = ""
-
--- Make a proper tab (MUST be done after window is initialized!)
-local KeyTab = KeyWindow:MakeTab({
-    Name = "Enter Key",
+-- Create tab
+local Tab = Window:MakeTab({
+    Name = "Key Input",
     Icon = "rbxassetid://7734053497",
     PremiumOnly = false
 })
 
--- Add TextBox to enter key
-KeyTab:AddTextbox({
-    Name = "Key Input",
+-- Create textbox
+Tab:AddTextbox({
+    Name = "Enter Key",
     Default = "",
     TextDisappear = false,
     Callback = function(Value)
-        _G.EnteredKey = Value
+        print("Entered Key: ", Value)
     end
 })
 
--- Add Button to check key
-KeyTab:AddButton({
+-- Create button
+Tab:AddButton({
     Name = "Submit Key",
     Callback = function()
-        if _G.EnteredKey == CorrectKey then
-            OrionLib:MakeNotification({
-                Name = "Correct Key",
-                Content = "Access Granted!",
-                Image = "rbxassetid://7733964641",
-                Time = 3
-            })
-
-            OrionLib:Destroy() -- destroy key window
-            task.wait(1)
-
-            -- Load main UI here (reloading OrionLib and window)
-            local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-            local MainWindow = OrionLib:MakeWindow({
-                Name = "YoxanXHub | Main",
-                HidePremium = false,
-                SaveConfig = true,
-                ConfigFolder = "YoxanXHub"
-            })
-
-            -- Save window globally for later use
-            _G.YoxanWindow = MainWindow
-        else
-            OrionLib:MakeNotification({
-                Name = "Wrong Key",
-                Content = "Invalid key entered!",
-                Image = "rbxassetid://7733964641",
-                Time = 3
-            })
-        end
+        OrionLib:MakeNotification({
+            Name = "Notification",
+            Content = "Button Pressed!",
+            Image = "rbxassetid://7733964641",
+            Time = 3
+        })
     end
 })
