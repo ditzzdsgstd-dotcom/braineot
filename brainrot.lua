@@ -1,16 +1,3 @@
-
-
-            -- Your main script goes here (example: load main hub)
-            loadstring(game:HttpGet("https://your-script-url.com/script.lua"))()
-        else
-            OrionLib:MakeNotification({
-                Name = "❌ Invalid Key",
-                Content = "The key you entered is incorrect.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    end
 })
                 
 -- Reload OrionLib for the main UI
