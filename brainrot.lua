@@ -1,15 +1,18 @@
 -- Load OrionLib
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Services and variables
+-- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+-- Global toggles
 local infiniteAmmoEnabled = false
 local killEnemyEnabled = false
 local espEnabled = false
 
--- Create Window
+-- Create main window
 local Window = OrionLib:MakeWindow({
     Name = "YoxanXHub | Naval Warfare",
     HidePremium = false,
@@ -17,15 +20,15 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "YoxanXHub"
 })
 
--- MAIN TAB
-local MainTab = Window:MakeTab({
+-- MAIN COMBAT TAB
+local CombatTab = Window:MakeTab({
     Name = "Combat",
     Icon = "rbxassetid://7734053493",
     PremiumOnly = false
 })
 
--- Infinite Ammo Toggle
-MainTab:AddToggle({
+-- Infinite Ammo
+CombatTab:AddToggle({
     Name = "Infinite Ammo",
     Default = false,
     Callback = function(state)
@@ -34,24 +37,20 @@ MainTab:AddToggle({
             task.spawn(function()
                 while infiniteAmmoEnabled and task.wait(3) do
                     pcall(function()
-                        local oh_get_gc = getgc or false
-                        local oh_is_x_closure = is_synapse_function or issentinelclosure or is_protosmasher_closure or is_sirhurt_closure or checkclosure or false
-                        local oh_get_info = debug.getinfo or getinfo or false
-                        local oh_set_upvalue = debug.setupvalue or setupvalue or setupval or false
+                        local get_gc = getgc or false
+                        local is_closure = is_synapse_function or issentinelclosure or is_protosmasher_closure or is_sirhurt_closure or checkclosure or false
+                        local get_info = debug.getinfo or getinfo or false
+                        local setup_value = debug.setupvalue or setupvalue or setupval or false
 
-                        if not oh_get_gc or not oh_get_info or not oh_set_upvalue then return end
+                        if not get_gc or not get_info or not setup_value then return end
 
-                        local function oh_find_function(name)
-                            for _, v in pairs(oh_get_gc()) do
-                                if type(v) == "function" and not oh_is_x_closure(v) then
-                                    if oh_get_info(v).name == name then return v end
+                        for _, func in pairs(get_gc()) do
+                            if type(func) == "function" and not is_closure(func) then
+                                local info = get_info(func)
+                                if info.name == "reload" then
+                                    setup_value(func, 4, math.huge)
                                 end
                             end
-                        end
-
-                        local oh_reload = oh_find_function("reload")
-                        if oh_reload then
-                            oh_set_upvalue(oh_reload, 4, math.huge)
                         end
                     end)
                 end
@@ -61,7 +60,7 @@ MainTab:AddToggle({
 })
 
 -- Kill Enemy Toggle
-MainTab:AddToggle({
+CombatTab:AddToggle({
     Name = "Auto Kill Enemies",
     Default = false,
     Callback = function(state)
@@ -70,16 +69,13 @@ MainTab:AddToggle({
             task.spawn(function()
                 while killEnemyEnabled and task.wait(0.1) do
                     pcall(function()
-                        local char = LocalPlayer.Character
-                        if char and char:FindFirstChild("Humanoid") then
-                            for _, v in pairs(workspace:GetDescendants()) do
-                                if v:IsA("Humanoid") and v.Parent and v.Parent:FindFirstChild("HumanoidRootPart") then
-                                    local target = Players:GetPlayerFromCharacter(v.Parent)
-                                    if target and target.Team ~= LocalPlayer.Team then
-                                        local Event = ReplicatedStorage:WaitForChild("Event")
-                                        Event:FireServer("shootRifle", "", {v.Parent.HumanoidRootPart})
-                                        Event:FireServer("shootRifle", "hit", {v})
-                                    end
+                        for _, v in pairs(Workspace:GetDescendants()) do
+                            if v:IsA("Humanoid") and v.Parent and v.Parent:FindFirstChild("HumanoidRootPart") then
+                                local target = Players:GetPlayerFromCharacter(v.Parent)
+                                if target and target.Team ~= LocalPlayer.Team then
+                                    local Event = ReplicatedStorage:WaitForChild("Event")
+                                    Event:FireServer("shootRifle", "", {v.Parent.HumanoidRootPart})
+                                    Event:FireServer("shootRifle", "hit", {v})
                                 end
                             end
                         end
@@ -91,7 +87,7 @@ MainTab:AddToggle({
 })
 
 -- ESP Toggle
-MainTab:AddToggle({
+CombatTab:AddToggle({
     Name = "Player ESP",
     Default = false,
     Callback = function(state)
@@ -134,9 +130,9 @@ MainTab:AddToggle({
                                 label.BackgroundTransparency = 1
                                 label.Size = UDim2.new(1, 0, 1, 0)
                                 label.Font = Enum.Font.SciFi
-                                label.Text = player.Name .. " | " .. dist
                                 label.TextColor3 = player.TeamColor.Color
                                 label.TextSize = 18
+                                label.Text = player.Name .. " | " .. dist
                             else
                                 player.Character.Icon["ESP Text"].Text = player.Name .. " | " .. dist
                             end
@@ -148,22 +144,13 @@ MainTab:AddToggle({
     end
 })
 
--- Notification
-OrionLib:MakeNotification({
-    Name = "YoxanXHub",
-    Content = "Combat tab loaded (Part 1/2)",
-    Image = "rbxassetid://7733960981",
-    Time = 4
-})
-
--- === TELEPORT TAB ===
+-- TELEPORT TAB
 local TeleportTab = Window:MakeTab({
     Name = "Teleport",
     Icon = "rbxassetid://7734053493",
     PremiumOnly = false
 })
 
--- Teleport buttons
 local teleportButtons = {
     {Title = "Japan Lobby", CFrame = CFrame.new(-4.103, -295.5, -36.644)},
     {Title = "America Lobby", CFrame = CFrame.new(15.0, -295.5, 46.504)},
@@ -189,9 +176,9 @@ for _, btn in ipairs(teleportButtons) do
     })
 end
 
--- Island teleport
+-- Island teleports
 local function teleportToIsland(islandCode)
-    local islands = workspace:FindFirstChild("Islands")
+    local islands = Workspace:FindFirstChild("Islands")
     if not islands then return end
 
     for _, island in pairs(islands:GetChildren()) do
@@ -221,14 +208,13 @@ TeleportTab:AddButton({ Name = "Island A", Callback = function() teleportToIslan
 TeleportTab:AddButton({ Name = "Island B", Callback = function() teleportToIsland("B") end })
 TeleportTab:AddButton({ Name = "Island C", Callback = function() teleportToIsland("C") end })
 
--- === PLAYER TAB ===
+-- PLAYER TAB
 local PlayerTab = Window:MakeTab({
     Name = "Player",
     Icon = "rbxassetid://7734053122",
     PremiumOnly = false
 })
 
--- GodMode
 PlayerTab:AddButton({
     Name = "GodMode (Safe Teleport)",
     Callback = function()
@@ -245,16 +231,14 @@ PlayerTab:AddButton({
     end
 })
 
--- Stop Auto Kill
 PlayerTab:AddButton({
     Name = "Stop Kill Enemy",
     Callback = function()
-        getgenv().killEnemyEnabled = false
+        killEnemyEnabled = false
         OrionLib:MakeNotification({ Name = "Auto-Kill", Content = "Disabled", Time = 3 })
     end
 })
 
--- Premium locked: Infinite Jump
 PlayerTab:AddButton({
     Name = "Infinite Jump (Locked)",
     Callback = function()
@@ -266,7 +250,6 @@ PlayerTab:AddButton({
     end
 })
 
--- Premium locked: Speed Boost
 PlayerTab:AddButton({
     Name = "Speed Boost (Locked)",
     Callback = function()
@@ -278,10 +261,10 @@ PlayerTab:AddButton({
     end
 })
 
--- Final message
+-- Final Notification
 OrionLib:MakeNotification({
     Name = "YoxanXHub",
-    Content = "Part 2/2 Loaded",
+    Content = "All features loaded successfully!",
     Image = "rbxassetid://7733960981",
-    Time = 4
+    Time = 5
 })
