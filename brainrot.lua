@@ -1,62 +1,73 @@
--- Load OrionLib (Nightmare version)
+repeat task.wait() until game:IsLoaded()
+
+-- Correct Key
+local CorrectKey = "YoxanXFree"
+local UserInput = ""
+
+-- Load OrionLib (Nightmare)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Create temporary window for key UI
+-- Key UI Window
 local KeyWindow = OrionLib:MakeWindow({
-    Name = "YoxanXHub Key System",
-    HidePremium = true,
+    Name = "YoxanXHub | Key System",
+    HidePremium = false,
     SaveConfig = false,
-    ConfigFolder = "YoxanXHubKey"
+    ConfigFolder = "YoxanXKey"
 })
 
-local correctKey = "YoxanXFree"
-local inputKey = ""
-
-local KeyTab = KeyWindow:Tab({
-    Name = "Key Input",
-    Icon = "lock"
+local KeyTab = KeyWindow:MakeTab({
+    Name = "Enter Key",
+    Icon = "rbxassetid://7734053497",
+    PremiumOnly = false
 })
 
 KeyTab:AddTextbox({
-    Name = "Enter your key",
+    Name = "Type the Key",
     Default = "",
-    TextDisappear = false,
+    TextDisappear = true,
     Callback = function(Value)
-        inputKey = Value
+        UserInput = Value
     end
 })
 
 KeyTab:AddButton({
-    Name = "Submit Key",
+    Name = "Submit",
     Callback = function()
-        if inputKey == correctKey then
+        if UserInput == CorrectKey then
             OrionLib:MakeNotification({
                 Name = "Correct Key",
-                Content = "Access granted!",
-                Image = "rbxassetid://4483345998",
+                Content = "Welcome to YoxanXHub!",
+                Image = "rbxassetid://7733964641",
                 Time = 3
             })
 
-            task.delay(1.5, function()
-                OrionLib:Destroy()
+            -- Wait before clearing UI
+            task.wait(1)
 
-                -- RELOAD OrionLib clean for the main UI (Script 2/4 will continue here)
-                local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-                local Window = OrionLib:MakeWindow({
-                    Name = "YoxanXHub",
-                    HidePremium = false,
-                    SaveConfig = true,
-                    ConfigFolder = "YoxanXHub"
-                })
+            -- Destroy all Orion UI instances
+            for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+                if gui.Name == "Orion" then
+                    gui:Destroy()
+                end
+            end
 
-                -- Script 2/4 begins here (Godmode, ESP, etc.)
-                -- Tinggal lanjut di bawah ini
-            end)
+            -- Reload OrionLib for main UI
+            local OrionLibMain = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+            local Window = OrionLibMain:MakeWindow({
+                Name = "YoxanXHub",
+                HidePremium = false,
+                SaveConfig = true,
+                ConfigFolder = "YoxanXHub"
+            })
+
+            -- Load Script 2/4
+            
+
         else
             OrionLib:MakeNotification({
-                Name = "Incorrect Key",
-                Content = "Please try again.",
-                Image = "rbxassetid://4483345998",
+                Name = "Wrong Key",
+                Content = "Try again.",
+                Image = "rbxassetid://7733658504",
                 Time = 3
             })
         end
