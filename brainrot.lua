@@ -1,88 +1,57 @@
-local correctKey = "YoxanxHub Fire"
-local enteredKey = ""
-
+-- Load OrionLib from nightmare
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local KeyWindow = OrionLib:MakeWindow({
-    Name = "YoxanXHub | Key",
+
+-- Set your key
+local CorrectKey = "YoxanxHub Fire"
+local KeyEntered = ""
+
+-- Create main window for key input
+local Window = OrionLib:MakeWindow({
+    Name = "YoxanXHub Key",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = "YoxanXKey"
 })
 
-local KeyTab = KeyWindow:Tab({
+local Tab = Window:Tab({
     Name = "Key System",
     Icon = "key"
 })
 
-KeyTab:AddTextbox({
-    Name = "Enter Key:",
+Tab:AddTextbox({
+    Title = "Enter Your Key",
+    Placeholder = "Type the key here",
     Default = "",
-    TextDisappear = false,
     Callback = function(text)
-        enteredKey = text
+        KeyEntered = text
     end
 })
 
-KeyTab:AddButton({
-    Name = "Submit",
+Tab:AddButton({
+    Title = "Submit Key",
     Callback = function()
-        if enteredKey == correctKey then
+        if KeyEntered == CorrectKey then
             OrionLib:MakeNotification({
-                Name = "✅ Success!",
-                Content = "Key Accepted. Loading...",
-                Time = 3
+                Name = "✅ Access Granted",
+                Content = "Welcome to YoxanXHub!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
             })
 
-            task.wait(1.5)
-            OrionLib:Destroy() -- Remove key UI
+            -- Wait before removing key UI
+            wait(1)
+            game:GetService("CoreGui"):FindFirstChild("Orion"):Destroy()
 
-            -- Start Loading Screen
-            local loadingGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-            loadingGui.Name = "LoadingUI"
-
-            local frame = Instance.new("Frame", loadingGui)
-            frame.Size = UDim2.new(0, 320, 0, 160)
-            frame.Position = UDim2.new(0.5, -160, 0.5, -80)
-            frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            frame.BorderSizePixel = 0
-
-            local uicorner = Instance.new("UICorner", frame)
-            uicorner.CornerRadius = UDim.new(0, 12)
-
-            local label = Instance.new("TextLabel", frame)
-            label.Size = UDim2.new(1, 0, 1, 0)
-            label.BackgroundTransparency = 1
-            label.Text = "Loading YoxanXHub..."
-            label.TextColor3 = Color3.new(1, 1, 1)
-            label.TextScaled = true
-            label.Font = Enum.Font.GothamBold
-
-            task.wait(2)
-
-            loadingGui:Destroy()
-
-            -- NEXT: Load your main UI script here (OrionLib, Tabs, etc)
-            -- You can insert: loadstring(...) or define the rest of the script
-
+            -- Your main script goes here (example: load main hub)
+            loadstring(game:HttpGet("https://your-script-url.com/script.lua"))()
         else
             OrionLib:MakeNotification({
                 Name = "❌ Invalid Key",
-                Content = "Please check the Discord for the correct key.",
-                Time = 3
+                Content = "The key you entered is incorrect.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
             })
         end
-    end
-})
-
-KeyTab:AddButton({
-    Name = "Copy Discord Invite",
-    Callback = function()
-        setclipboard("https://discord.gg/HQ8WqhxQ")
-        OrionLib:MakeNotification({
-            Name = "Copied!",
-            Content = "Discord link copied to clipboard.",
-            Time = 3
-        })
     end
 })
                 
