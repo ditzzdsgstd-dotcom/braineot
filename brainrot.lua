@@ -1,14 +1,13 @@
 -- Wait for game to load
 repeat task.wait() until game:IsLoaded()
 
--- Load OrionLib (Nightmare version)
+-- Load OrionLib
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
--- Correct key
 local CorrectKey = "YoxanXFree"
 local UserInput = ""
 
--- Key input window
+-- Create Key UI Window
 local KeyWindow = OrionLib:MakeWindow({
     Name = "YoxanXHub | Key System",
     HidePremium = false,
@@ -16,7 +15,7 @@ local KeyWindow = OrionLib:MakeWindow({
     ConfigFolder = "YoxanXKey"
 })
 
--- Key input tab
+-- Key Tab
 local KeyTab = KeyWindow:MakeTab({
     Name = "Enter Key",
     Icon = "rbxassetid://7734053497",
@@ -33,7 +32,7 @@ KeyTab:AddTextbox({
     end
 })
 
--- Submit button
+-- Submit Button
 KeyTab:AddButton({
     Name = "Submit",
     Callback = function()
@@ -46,20 +45,23 @@ KeyTab:AddButton({
             })
 
             task.delay(0.5, function()
-                -- Completely reload OrionLib after destroying UI
-                KeyWindow:Destroy()
-                OrionLib = nil
-                task.wait(0.5)
+                -- 🔥 Manual Orion destroy
+                for _, v in pairs(game.CoreGui:GetChildren()) do
+                    if v.Name == "Orion" then
+                        v:Destroy()
+                    end
+                end
 
+                -- 🔁 Reload Orion
                 OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
                 _G.MainWindow = OrionLib:MakeWindow({
-                    Name = "YoxanXHub | STEAL A BRAINROT",
+                    Name = "YoxanXHub",
                     HidePremium = false,
                     SaveConfig = true,
                     ConfigFolder = "YoxanXHub"
                 })
 
-                -- 🟩 You can now continue from script 2/4 using: _G.MainWindow
+                -- ✅ Ready for 2/4 using _G.MainWindow
             end)
 
         else
