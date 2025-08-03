@@ -1,4 +1,4 @@
--- YoxanXHub V2 | Part 1/5 - UI Setup
+-- YoxanXHub V2.5 | Part 1/5 - UI Setup
 if not game:IsLoaded() then game.Loaded:Wait() end
 repeat task.wait() until game.Players and game.Players.LocalPlayer
 
@@ -6,261 +6,343 @@ local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig
 local Player = game.Players.LocalPlayer
 
 local Window = OrionLib:MakeWindow({
-    Name = "🧠 YoxanXHub | Steal a Brainrot V2",
+    Name = "🧠 YoxanXHub | Steal a Brainrot V2.5",
     HidePremium = false,
     SaveConfig = false,
-    IntroText = "Welcome to YoxanXHub!",
-    ConfigFolder = "YoxanX_Storage"
+    IntroText = "YoxanXHub is loading...",
+    ConfigFolder = "YoxanX_SAB"
 })
 
--- Tabs
-_G.TabESP = Window:MakeTab({Name = "📍 ESP", Icon = "rbxassetid://4370345144", PremiumOnly = false})
-_G.TabSteal = Window:MakeTab({Name = "🧠 Steal", Icon = "rbxassetid://4373433809", PremiumOnly = false})
-_G.TabCombat = Window:MakeTab({Name = "⚔️ Combat", Icon = "rbxassetid://13593214401", PremiumOnly = false})
-_G.TabBase = Window:MakeTab({Name = "🏠 Base", Icon = "rbxassetid://11324738418", PremiumOnly = false})
-_G.TabHop = Window:MakeTab({Name = "🌐 Server Hop", Icon = "rbxassetid://6034287600", PremiumOnly = false})
+-- Main Tabs
+_G.TabESP = Window:MakeTab({
+    Name = "🔍 ESP",
+    Icon = "rbxassetid://6031280882",
+    PremiumOnly = false
+})
 
--- YoxanXHub V2 | Part 2/5 - ESP for Brainrot (by rarity)
-local selectedRarity = "Secret"
-local runESP = true
-local ESPFolder = Instance.new("Folder", game.CoreGui)
-ESPFolder.Name = "YoxanX_ESP"
+_G.TabSteal = Window:MakeTab({
+    Name = "🎯 Steal",
+    Icon = "rbxassetid://7734035242",
+    PremiumOnly = false
+})
 
--- Brainrot Data (Name -> Rarity)
+_G.TabBase = Window:MakeTab({
+    Name = "🏠 Base",
+    Icon = "rbxassetid://7734016429",
+    PremiumOnly = false
+})
+
+_G.TabUtility = Window:MakeTab({
+    Name = "⚙️ Utility",
+    Icon = "rbxassetid://7734053490",
+    PremiumOnly = false
+})
+
+_G.TabMisc = Window:MakeTab({
+    Name = "📦 Misc",
+    Icon = "rbxassetid://7734005277",
+    PremiumOnly = false
+})
+
+-- Notification
+OrionLib:MakeNotification({
+    Name = "YoxanXHub V2.5",
+    Content = "UI loaded. By YoxanXHub.",
+    Image = "rbxassetid://7733964641",
+    Time = 5
+})
+
+-- Discord Invite
+_G.TabMisc:AddParagraph("Join Our Discord", "🌐 https://discord.gg/Az8Cm2F6")
+
+-- YoxanXHub V2.5 | Part 2/5 - ESP System
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local rarityFilter = "Secret"
+local drawings = {}
+
 local brainrotList = {
-    ["Graipuss Medussi"] = "Secret",
-    ["La Grande Combinasion"] = "Secret",
-    ["Garama and Madundung"] = "Secret",
-    ["Gorillo Watermelondrillo"] = "Mythic",
-    ["Avocadorilla"] = "Mythic",
-    ["Cocofanta Elefanto"] = "Brainrot God",
-    ["Espresso Signora"] = "Brainrot God",
-    ["Chimpanzini Bananini"] = "Legendary",
-    ["Chef Crabracadabra"] = "Legendary",
-    ["Perochello Lemonchello"] = "Epic",
-    ["Cappuccino Assassino"] = "Epic",
-    ["Bandito Bobritto"] = "Rare",
-    ["Ta Ta Ta Ta Sahur"] = "Rare"
-    -- Add more as needed
+    Secret = {"Chimpanzini Spiderini", "Graipuss Medussi", "La Grande Combinasion", "Nuclearo Dinossauro", "Garama and Madundung"},
+    Mythic = {"Bombombini Gusini", "Cavallo Virtuso", "Gorillo Watermelondrillo", "Avocadorilla"},
+    Legendary = {"Ballerina Cappuccina", "Chef Crabracadabra", "Lionel Cactuseli"},
+    Epic = {"Avocadini Guffo", "Perochello Lemonchello", "Salamino Penguino"},
+    Rare = {"Tung Tung Tung Sahur", "Trippi Troppi", "Tric Trac Baraboom"}
 }
 
--- Create ESP
-local function createESP(target, name)
-    if target:FindFirstChild("ESP") then return end
-    local tag = Instance.new("BillboardGui", target)
-    tag.Name = "ESP"
-    tag.AlwaysOnTop = true
-    tag.Size = UDim2.new(0, 100, 0, 40)
-    tag.StudsOffset = Vector3.new(0, 2, 0)
-
-    local text = Instance.new("TextLabel", tag)
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "💀 " .. name
-    text.TextColor3 = Color3.fromRGB(255, 200, 0)
-    text.TextStrokeTransparency = 0.5
-    text.Font = Enum.Font.GothamBold
-    text.TextScaled = true
+local function clearESP()
+    for _, v in pairs(drawings) do
+        if v.Text then v.Text:Remove() end
+    end
+    drawings = {}
 end
 
--- ESP Loop
-task.spawn(function()
-    while runESP do
-        for _, model in ipairs(workspace:GetDescendants()) do
-            if model:IsA("Model") and not model:FindFirstChild("ESP") and model:FindFirstChild("HumanoidRootPart") then
-                local name = model.Name
-                local rarity = brainrotList[name]
-                if rarity == selectedRarity then
-                    createESP(model.HumanoidRootPart, name)
+local function addESP(obj, text, color)
+    local tag = Drawing.new("Text")
+    tag.Text = text
+    tag.Size = 14
+    tag.Center = true
+    tag.Outline = true
+    tag.Font = 2
+    tag.Color = color
+    tag.Visible = false
+    drawings[#drawings+1] = {Text = tag, Object = obj}
+end
+
+local function updateESP()
+    clearESP()
+
+    -- Brainrot ESP
+    for _, v in ipairs(Workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("NameGui") then
+            for _, name in pairs(brainrotList[rarityFilter] or {}) do
+                if string.find(v.Name, name) then
+                    addESP(v, "["..name.."]", Color3.fromRGB(255, 100, 100))
                 end
             end
         end
-        task.wait(5)
+    end
+
+    -- Base Timer ESP
+    for _, base in ipairs(Workspace:GetChildren()) do
+        if base:IsA("Model") and base:FindFirstChild("Timer") then
+            addESP(base, "[Base: "..base.Timer.Value.."s]", Color3.fromRGB(255, 255, 0))
+        end
+    end
+
+    -- Player ESP
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+            addESP(plr.Character, "["..plr.Name.."] "..math.floor(dist).."s", Color3.fromRGB(0, 255, 255))
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    for _, v in pairs(drawings) do
+        if v.Object and v.Object:FindFirstChild("HumanoidRootPart") then
+            local pos, onScreen = Camera:WorldToViewportPoint(v.Object.HumanoidRootPart.Position)
+            v.Text.Position = Vector2.new(pos.X, pos.Y - 20)
+            v.Text.Visible = onScreen
+        else
+            v.Text.Visible = false
+        end
     end
 end)
 
--- UI Dropdown
+-- Auto-refresh
+task.spawn(function()
+    while task.wait(5) do
+        updateESP()
+    end
+end)
+
+-- Dropdown for rarity filter
 _G.TabESP:AddDropdown({
-    Name = "Brainrot Rarity ESP",
+    Name = "Select Brainrot Rarity",
     Default = "Secret",
-    Options = {"Secret", "Mythic", "Brainrot God", "Legendary", "Epic", "Rare"},
-    Callback = function(option)
-        selectedRarity = option
-        for _, gui in ipairs(ESPFolder:GetDescendants()) do
-            if gui:IsA("BillboardGui") then gui:Destroy() end
-        end
+    Options = {"Secret", "Mythic", "Legendary", "Epic", "Rare"},
+    Callback = function(value)
+        rarityFilter = value
+        updateESP()
     end
 })
 
-_G.TabESP:AddToggle({
-    Name = "ESP Toggle",
-    Default = true,
-    Callback = function(state)
-        runESP = state
-        if not state then
-            for _, gui in ipairs(ESPFolder:GetDescendants()) do
-                if gui:IsA("BillboardGui") then gui:Destroy() end
-            end
-        end
+-- Spectate System
+local spectate = nil
+local function spectatePlayer(plr)
+    if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+        Camera.CameraSubject = plr.Character.Humanoid
     end
-})
-
--- YoxanXHub V2 | Part 3/5 - Smart Server Hop
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local placeId = 109983668079237
-local Player = game.Players.LocalPlayer
-local selectedHopRarity = "Secret"
-
-local brainrotList = {
-    ["Graipuss Medussi"] = "Secret", ["La Grande Combinasion"] = "Secret",
-    ["Garama and Madundung"] = "Secret", ["Gorillo Watermelondrillo"] = "Mythic",
-    ["Avocadorilla"] = "Mythic", ["Cocofanta Elefanto"] = "Brainrot God",
-    ["Espresso Signora"] = "Brainrot God", ["Chimpanzini Bananini"] = "Legendary",
-    ["Chef Crabracadabra"] = "Legendary", ["Perochello Lemonchello"] = "Epic",
-    ["Cappuccino Assassino"] = "Epic", ["Bandito Bobritto"] = "Rare",
-    ["Ta Ta Ta Ta Sahur"] = "Rare"
-}
-
-local function getServerList()
-    local servers = {}
-    local cursor = ""
-    repeat
-        local response = HttpService:JSONDecode(game:HttpGet(
-            ("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Desc&limit=100&cursor=%s"):format(placeId, cursor)))
-        for _, server in ipairs(response.data) do
-            if type(server.players) == "table" then
-                table.insert(servers, server)
-            end
-        end
-        cursor = response.nextPageCursor
-    until not cursor
-    return servers
 end
 
-local function hopToBestServer()
-    local myJobId = game.JobId
-    local servers = getServerList()
-    for _, server in ipairs(servers) do
-        if server.playing < server.maxPlayers and server.id ~= myJobId then
-            TeleportService:TeleportToPlaceInstance(placeId, server.id, Player)
+local playerNames = {}
+for _, p in pairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then table.insert(playerNames, p.Name) end
+end
+
+_G.TabESP:AddDropdown({
+    Name = "Spectate Player",
+    Default = "",
+    Options = playerNames,
+    Callback = function(name)
+        local target = Players:FindFirstChild(name)
+        if target then
+            spectatePlayer(target)
+        end
+    end
+})
+
+_G.TabESP:AddButton({
+    Name = "Unspectate",
+    Callback = function()
+        Camera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
+    end
+})
+
+-- YoxanXHub V2.5 | Part 3/5 - Auto Server Hop by Rarity
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local targetRarity = "Secret"
+local PlaceId = 109983668079237
+local tryingHop = false
+
+-- Add rarity dropdown
+_G.TabUtility:AddDropdown({
+    Name = "Hop to Brainrot Rarity",
+    Default = "Secret",
+    Options = {"Secret", "Mythic", "Legendary", "Epic", "Rare"},
+    Callback = function(value)
+        targetRarity = value
+    end
+})
+
+-- Button to force hop manually
+_G.TabUtility:AddButton({
+    Name = "🔁 Manual Server Hop",
+    Callback = function()
+        tryingHop = true
+        hopToServer()
+    end
+})
+
+-- Brainrot names by rarity
+local brainrotNames = {
+    Secret = {"Graipuss Medussi", "La Grande Combinasion", "Nuclearo Dinossauro", "Garama and Madundung", "Chimpanzini Spiderini"},
+    Mythic = {"Bombombini Gusini", "Cavallo Virtuso", "Gorillo Watermelondrillo", "Avocadorilla"},
+    Legendary = {"Ballerina Cappuccina", "Chef Crabracadabra", "Lionel Cactuseli"},
+    Epic = {"Avocadini Guffo", "Perochello Lemonchello", "Salamino Penguino"},
+    Rare = {"Trippi Troppi", "Tric Trac Baraboom", "Bandito Bobritto"}
+}
+
+-- Hop function
+function hopToServer()
+    local success, response = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(
+            string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Desc&limit=100", PlaceId)
+        ))
+    end)
+    
+    if not success then
+        warn("Failed to get server list")
+        return
+    end
+
+    local servers = response.data
+    for _, server in pairs(servers) do
+        if server.playing < server.maxPlayers and server.id ~= game.JobId then
+            TeleportService:TeleportToPlaceInstance(PlaceId, server.id, LocalPlayer)
             break
         end
     end
 end
 
-_G.TabHop:AddDropdown({
-    Name = "Target Rarity (for Server Hop)",
-    Default = "Secret",
-    Options = {"Secret", "Mythic", "Brainrot God", "Legendary", "Epic", "Rare"},
-    Callback = function(value)
-        selectedHopRarity = value
-    end
-})
-
-_G.TabHop:AddButton({
-    Name = "🌐 Auto Hop to Rich Server",
-    Callback = function()
-        OrionLib:MakeNotification({Name = "Server Hop", Content = "Searching servers...", Image = "", Time = 3})
-        hopToBestServer()
-    end
-})
-
--- YoxanXHub V2 | Part 4/5 - Steal & Base
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-local brainrotAbove = nil
-local savedBasePos = nil
-
--- Save Base Position
-_G.TabBase:AddButton({
-    Name = "📍 Save Base Location",
-    Callback = function()
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            savedBasePos = char.HumanoidRootPart.Position
-            OrionLib:MakeNotification({Name = "Base Saved", Content = "Your base location has been saved!", Time = 3})
-        end
-    end
-})
-
--- Teleport to Base (even if locked)
-_G.TabBase:AddButton({
-    Name = "🏠 Teleport to Saved Base",
-    Callback = function()
-        if savedBasePos and LocalPlayer.Character and HRP then
-            HRP.CFrame = CFrame.new(savedBasePos + Vector3.new(0, 3, 0))
-        end
-    end
-})
-
--- Anti-Steal Tracker (teleport to thief)
-_G.TabBase:AddButton({
-    Name = "🛡️ Anti-Steal Track",
-    Callback = function()
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") then
-                local tag = plr.Character.Head:FindFirstChild("BrainrotNameTag")
-                if tag then
-                    HRP.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+-- Check if desired Brainrot exists in current server
+function checkServerForRarity()
+    local found = false
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("NameGui") then
+            for _, name in pairs(brainrotNames[targetRarity]) do
+                if string.find(v.Name, name) then
+                    found = true
                     break
                 end
             end
         end
+        if found then break end
     end
-})
+    return found
+end
 
--- Instant Steal Logic
-RunService.RenderStepped:Connect(function()
-    if not HRP then return end
-    local char = LocalPlayer.Character
-    if not char then return end
-
-    for _, model in ipairs(workspace:GetDescendants()) do
-        if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
-            local name = model.Name
-            local rarity = brainrotList[name]
-            if rarity and model:FindFirstChild("BrainrotNameTag") then
-                -- check if brainrot is held by you
-                if model:FindFirstChild("Parent") == char then
-                    -- teleport immediately to base (CFrame break)
-                    if savedBasePos then
-                        HRP.CFrame = CFrame.new(savedBasePos + Vector3.new(0, 3, 0))
-                    end
-                end
-            end
+-- Auto-hop loop every 10s
+task.spawn(function()
+    while task.wait(10) do
+        if not checkServerForRarity() then
+            hopToServer()
         end
     end
 end)
 
--- YoxanXHub V2 | Part 5/5 - Movement Mods
+-- YoxanXHub V2.5 | Part 4/5 - Movement & Combat System
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local noclipEnabled = false
-local speedEnabled = true
-local jumpEnabled = true
-local godEnabled = true
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
--- Apply Movement Mods
-local function applyMods()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if hum and root then
-        if speedEnabled then hum.WalkSpeed = 200 end
-        if jumpEnabled then hum.JumpPower = 100 end
-        if godEnabled then root.Anchored = false; root.CFrame = root.CFrame + Vector3.new(0, 0.01, 0) end
-    end
+local humanoid = nil
+local HRP = nil
+local float = false
+local noclip = false
+local godmode = false
+local speedBoost = false
+local speedValue = 200
+
+local function setupCharacter()
+    repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
+    HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 end
 
--- Noclip Toggle
-game:GetService("RunService").Stepped:Connect(function()
-    if noclipEnabled and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+setupCharacter()
+LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+-- Anti TP
+local lastPos = nil
+RunService.Heartbeat:Connect(function()
+    if HRP and lastPos then
+        local dist = (HRP.Position - lastPos).Magnitude
+        if dist > 100 then
+            HRP.CFrame = CFrame.new(lastPos)
+        end
+    end
+    if HRP then lastPos = HRP.Position end
+end)
+
+-- Godmode (no damage and break respawn)
+local function enableGodmode()
+    if not LocalPlayer.Character then return end
+    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+            part.Anchored = false
+        end
+    end
+    if humanoid then
+        humanoid.Health = humanoid.MaxHealth
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+    end
+    HRP.Velocity = Vector3.zero
+    HRP.CFrame = HRP.CFrame + Vector3.new(0, 0.1, 0)
+end
+
+-- Float Mode
+RunService.RenderStepped:Connect(function()
+    if float and HRP then
+        HRP.Velocity = Vector3.new(0, 25, 0)
+    end
+end)
+
+-- Speed Toggle
+RunService.RenderStepped:Connect(function()
+    if speedBoost and humanoid then
+        humanoid.WalkSpeed = speedValue
+    else
+        humanoid.WalkSpeed = 16
+    end
+end)
+
+-- Noclip
+RunService.Stepped:Connect(function()
+    if noclip and LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") and part.CanCollide == true then
                 part.CanCollide = false
             end
@@ -268,51 +350,113 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- Auto Reapply Mods on Respawn
-LocalPlayer.CharacterAdded:Connect(function()
-    wait(1)
-    applyMods()
+-- Steal Logic
+local function instantSteal()
+    for _, v in pairs(Workspace:GetDescendants()) do
+        if v:IsA("ProximityPrompt") and string.find(v.Name, "Steal") then
+            fireproximityprompt(v)
+            task.wait(0.2)
+            HRP.CFrame = CFrame.new(_G.savedBase or Vector3.new(0, 15, 0))
+            break
+        end
+    end
+end
+
+-- Save base
+local function saveBase()
+    _G.savedBase = HRP.Position + Vector3.new(0, 5, 0)
+    _G.notify("✅ Base saved!")
+end
+
+-- Orion Toggles & Buttons
+_G.TabCombat:AddToggle({
+    Name = "Godmode (CFrameSafe)",
+    Default = true,
+    Callback = function(state)
+        godmode = state
+        if state then enableGodmode() end
+    end
+})
+
+_G.TabCombat:AddToggle({
+    Name = "Float Mode",
+    Default = false,
+    Callback = function(state) float = state end
+})
+
+_G.TabCombat:AddToggle({
+    Name = "Noclip Mode",
+    Default = false,
+    Callback = function(state) noclip = state end
+})
+
+_G.TabCombat:AddToggle({
+    Name = "Speed Boost",
+    Default = true,
+    Callback = function(state) speedBoost = state end
+})
+
+_G.TabCombat:AddSlider({
+    Name = "Speed Value",
+    Min = 16,
+    Max = 300,
+    Default = 200,
+    Increment = 10,
+    Callback = function(value) speedValue = value end
+})
+
+_G.TabCombat:AddButton({
+    Name = "💾 Save My Base",
+    Callback = saveBase
+})
+
+_G.TabCombat:AddButton({
+    Name = "⚡ Instant Steal",
+    Callback = instantSteal
+})
+
+-- YoxanXHub V2.5 | Part 5/5 - Utility & UI Polish
+local RunService = game:GetService("RunService")
+local TextService = game:GetService("TextService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+-- ⚙️ FPS Counter
+local fps = 0
+local lastUpdate = tick()
+RunService.RenderStepped:Connect(function()
+	fps += 1
+	if tick() - lastUpdate >= 1 then
+		_G.TabUtility:SetName("Utility ⚙️ [FPS: "..fps.."]")
+		fps = 0
+		lastUpdate = tick()
+	end
 end)
 
--- Buttons
-_G.TabCombat:AddToggle({
-    Name = "🛡️ Godmode (CFrame Safe)",
-    Default = true,
-    Callback = function(state)
-        godEnabled = state
-        applyMods()
-    end
+-- 🧪 Debug Info Button
+_G.TabUtility:AddButton({
+	Name = "📊 Show Debug Info",
+	Callback = function()
+		local ping = math.floor(Stats().Network.ServerStatsItem["Data Ping"]:GetValue())
+		local plrCount = #Players:GetPlayers()
+		_G.notify("📈 Ping: "..ping.." ms\n👥 Players: "..plrCount.."\n🧠 Loaded: V2.5")
+	end
 })
 
-_G.TabCombat:AddToggle({
-    Name = "🏃 Speed 200",
-    Default = true,
-    Callback = function(state)
-        speedEnabled = state
-        applyMods()
-    end
-})
+-- 🔔 Custom Notify Function
+_G.notify = function(text)
+	local Orion = getgenv().OrionLib
+	if Orion and Orion:FindFirstChild("MakeNotification") then
+		Orion:MakeNotification({
+			Name = "YoxanXHub V2.5",
+			Content = text,
+			Image = "rbxassetid://7733954760", -- bell icon
+			Time = 4
+		})
+	end
+end
 
-_G.TabCombat:AddToggle({
-    Name = "🌀 Jump 100",
-    Default = true,
-    Callback = function(state)
-        jumpEnabled = state
-        applyMods()
-    end
-})
+-- 💾 Settings Placeholder
+_G.TabUtility:AddParagraph("Save/Load Settings", "Coming soon in V3.0...")
 
-_G.TabCombat:AddToggle({
-    Name = "🚪 Noclip",
-    Default = false,
-    Callback = function(state)
-        noclipEnabled = state
-    end
-})
-
-OrionLib:MakeNotification({
-    Name = "YoxanXHub V2 Loaded",
-    Content = "Ready To Use.",
-    Image = "rbxassetid://4483345998",
-    Time = 4
-})
+OrionLib:Init()
