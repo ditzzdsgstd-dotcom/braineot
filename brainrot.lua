@@ -1,11 +1,6 @@
 -- YoxanXHub V2.5 | Steal a Brainrot | 1/5 (UI Loader)
 -- Make sure this is executed before part 2/5 to 5/5
-
-if not getgenv().OrionLib then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-end
-
-local OrionLib = getgenv().OrionLib
+   local orionlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 
 local Window = OrionLib:MakeWindow({
     Name = "YoxanXHub | Steal a Brainrot V2.5",
