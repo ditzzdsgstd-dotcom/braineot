@@ -1,348 +1,263 @@
--- YoxanXHub V2.5 | Part 1/5 - UI Setup
-if not game:IsLoaded() then game.Loaded:Wait() end
-repeat task.wait() until game.Players and game.Players.LocalPlayer
+-- YoxanXHub V2.5 | Steal a Brainrot | 1/5 (UI Loader)
+-- Make sure this is executed before part 2/5 to 5/5
 
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local Player = game.Players.LocalPlayer
+if not getgenv().OrionLib then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+end
+
+local OrionLib = getgenv().OrionLib
 
 local Window = OrionLib:MakeWindow({
-    Name = "🧠 YoxanXHub | Steal a Brainrot V2.5",
+    Name = "YoxanXHub | Steal a Brainrot V2.5",
     HidePremium = false,
     SaveConfig = false,
-    IntroText = "YoxanXHub is loading...",
-    ConfigFolder = "YoxanX_SAB"
+    IntroEnabled = true,
+    IntroText = "YoxanXHub V2.5",
+    ConfigFolder = "YoxanXHub_SAB"
 })
 
--- Main Tabs
-_G.TabESP = Window:MakeTab({
-    Name = "🔍 ESP",
-    Icon = "rbxassetid://6031280882",
-    PremiumOnly = false
-})
+-- Tabs
+getgenv().TabESP = Window:MakeTab({Name = "📡 ESP", Icon = "rbxassetid://6031075938", PremiumOnly = false})
+getgenv().TabSteal = Window:MakeTab({Name = "🎯 Steal", Icon = "rbxassetid://6034287529", PremiumOnly = false})
+getgenv().TabBase = Window:MakeTab({Name = "🏠 Base", Icon = "rbxassetid://6035047377", PremiumOnly = false})
+getgenv().TabUtil = Window:MakeTab({Name = "🛠 Utility", Icon = "rbxassetid://6031260794", PremiumOnly = false})
+getgenv().TabMisc = Window:MakeTab({Name = "📦 Misc", Icon = "rbxassetid://6031094678", PremiumOnly = false})
 
-_G.TabSteal = Window:MakeTab({
-    Name = "🎯 Steal",
-    Icon = "rbxassetid://7734035242",
-    PremiumOnly = false
-})
-
-_G.TabBase = Window:MakeTab({
-    Name = "🏠 Base",
-    Icon = "rbxassetid://7734016429",
-    PremiumOnly = false
-})
-
-_G.TabUtility = Window:MakeTab({
-    Name = "⚙️ Utility",
-    Icon = "rbxassetid://7734053490",
-    PremiumOnly = false
-})
-
-_G.TabMisc = Window:MakeTab({
-    Name = "📦 Misc",
-    Icon = "rbxassetid://7734005277",
-    PremiumOnly = false
-})
-
--- Notification
-OrionLib:MakeNotification({
-    Name = "YoxanXHub V2.5",
-    Content = "UI loaded. By YoxanXHub.",
-    Image = "rbxassetid://7733964641",
-    Time = 5
-})
-
--- Discord Invite
-_G.TabMisc:AddParagraph("Join Our Discord", "🌐 https://discord.gg/Az8Cm2F6")
-
--- YoxanXHub V2.5 | Part 2/5 - ESP System
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
-local rarityFilter = "Secret"
-local drawings = {}
+local BrainrotList = {} -- Auto-filled list later
+local RarityFilter = "All"
 
-local brainrotList = {
-    Secret = {"Chimpanzini Spiderini", "Graipuss Medussi", "La Grande Combinasion", "Nuclearo Dinossauro", "Garama and Madundung"},
-    Mythic = {"Bombombini Gusini", "Cavallo Virtuso", "Gorillo Watermelondrillo", "Avocadorilla"},
-    Legendary = {"Ballerina Cappuccina", "Chef Crabracadabra", "Lionel Cactuseli"},
-    Epic = {"Avocadini Guffo", "Perochello Lemonchello", "Salamino Penguino"},
-    Rare = {"Tung Tung Tung Sahur", "Trippi Troppi", "Tric Trac Baraboom"}
+-- ESP container
+local ESPObjects = {}
+
+-- Color per rarity
+local RarityColors = {
+    ["Common"] = Color3.fromRGB(180, 180, 180),
+    ["Rare"] = Color3.fromRGB(0, 170, 255),
+    ["Epic"] = Color3.fromRGB(180, 0, 255),
+    ["Legendary"] = Color3.fromRGB(255, 170, 0),
+    ["Mythic"] = Color3.fromRGB(255, 0, 0),
+    ["Secret"] = Color3.fromRGB(255, 255, 0),
+    ["Brainrot God"] = Color3.fromRGB(0, 255, 0)
 }
 
+-- Cleanup
 local function clearESP()
-    for _, v in pairs(drawings) do
-        if v.Text then v.Text:Remove() end
+    for _,v in pairs(ESPObjects) do
+        if v and v.Adornee then
+            v:Destroy()
+        end
     end
-    drawings = {}
+    ESPObjects = {}
 end
 
-local function addESP(obj, text, color)
-    local tag = Drawing.new("Text")
-    tag.Text = text
-    tag.Size = 14
-    tag.Center = true
-    tag.Outline = true
-    tag.Font = 2
-    tag.Color = color
-    tag.Visible = false
-    drawings[#drawings+1] = {Text = tag, Object = obj}
+-- Create ESP Label
+local function createESP(obj, text, color)
+    local Billboard = Instance.new("BillboardGui", obj)
+    Billboard.Name = "ESP_"..obj.Name
+    Billboard.Size = UDim2.new(0,100,0,40)
+    Billboard.Adornee = obj
+    Billboard.AlwaysOnTop = true
+
+    local Label = Instance.new("TextLabel", Billboard)
+    Label.Size = UDim2.new(1,0,1,0)
+    Label.Text = text
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = color or Color3.fromRGB(255,255,255)
+    Label.TextStrokeTransparency = 0.4
+    Label.Font = Enum.Font.GothamBold
+    Label.TextScaled = true
+
+    table.insert(ESPObjects, Billboard)
 end
 
+-- Main ESP loop
 local function updateESP()
     clearESP()
 
     -- Brainrot ESP
-    for _, v in ipairs(Workspace:GetDescendants()) do
-        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("NameGui") then
-            for _, name in pairs(brainrotList[rarityFilter] or {}) do
-                if string.find(v.Name, name) then
-                    addESP(v, "["..name.."]", Color3.fromRGB(255, 100, 100))
+    for _,v in pairs(Workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChildWhichIsA("Humanoid") then
+            local name = v.Name
+            local rarity = "Unknown"
+            for key, color in pairs(RarityColors) do
+                if name:lower():find(key:lower()) then
+                    rarity = key
+                    break
                 end
+            end
+            if RarityFilter == "All" or RarityFilter == rarity then
+                createESP(v:FindFirstChild("HumanoidRootPart"), name.." ["..rarity.."]", RarityColors[rarity] or Color3.new(1,1,1))
             end
         end
     end
 
     -- Base Timer ESP
-    for _, base in ipairs(Workspace:GetChildren()) do
-        if base:IsA("Model") and base:FindFirstChild("Timer") then
-            addESP(base, "[Base: "..base.Timer.Value.."s]", Color3.fromRGB(255, 255, 0))
+    for _,v in pairs(Workspace:GetChildren()) do
+        if v:IsA("Model") and v.Name:lower():find("base") and v:FindFirstChild("TimerGui") then
+            createESP(v:FindFirstChild("Part") or v:FindFirstChildWhichIsA("BasePart"), "Timer: "..v.TimerGui.TextLabel.Text, Color3.fromRGB(255, 255, 255))
         end
     end
 
     -- Player ESP
-    for _, plr in pairs(Players:GetPlayers()) do
+    for _,plr in pairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).Magnitude
-            addESP(plr.Character, "["..plr.Name.."] "..math.floor(dist).."s", Color3.fromRGB(0, 255, 255))
+            local dist = math.floor((plr.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+            createESP(plr.Character.HumanoidRootPart, plr.DisplayName.." ["..dist.."m]", Color3.fromRGB(0,255,255))
         end
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    for _, v in pairs(drawings) do
-        if v.Object and v.Object:FindFirstChild("HumanoidRootPart") then
-            local pos, onScreen = Camera:WorldToViewportPoint(v.Object.HumanoidRootPart.Position)
-            v.Text.Position = Vector2.new(pos.X, pos.Y - 20)
-            v.Text.Visible = onScreen
-        else
-            v.Text.Visible = false
-        end
-    end
-end)
-
--- Auto-refresh
+-- Run every 5s
 task.spawn(function()
-    while task.wait(5) do
-        updateESP()
+    while true do
+        if getgenv().ESPEnabled then
+            updateESP()
+        else
+            clearESP()
+        end
+        task.wait(5)
     end
 end)
 
--- Dropdown for rarity filter
-_G.TabESP:AddDropdown({
-    Name = "Select Brainrot Rarity",
-    Default = "Secret",
-    Options = {"Secret", "Mythic", "Legendary", "Epic", "Rare"},
-    Callback = function(value)
-        rarityFilter = value
-        updateESP()
+-- UI Toggles
+TabESP:AddToggle({
+    Name = "Enable All ESP",
+    Default = true,
+    Callback = function(v)
+        getgenv().ESPEnabled = v
     end
 })
 
--- Spectate System
-local spectate = nil
-local function spectatePlayer(plr)
-    if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        Camera.CameraSubject = plr.Character.Humanoid
+TabESP:AddDropdown({
+    Name = "Filter Rarity (Brainrot)",
+    Options = {"All", "Common", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Brainrot God"},
+    Default = "All",
+    Callback = function(v)
+        RarityFilter = v
     end
-end
+})
 
-local playerNames = {}
-for _, p in pairs(Players:GetPlayers()) do
-    if p ~= LocalPlayer then table.insert(playerNames, p.Name) end
-end
-
-_G.TabESP:AddDropdown({
+-- Spectate system
+TabESP:AddDropdown({
     Name = "Spectate Player",
-    Default = "",
-    Options = playerNames,
-    Callback = function(name)
-        local target = Players:FindFirstChild(name)
-        if target then
-            spectatePlayer(target)
+    Options = {},
+    Callback = function(playerName)
+        local plr = Players:FindFirstChild(playerName)
+        if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChild("Humanoid")
         end
     end
 })
 
-_G.TabESP:AddButton({
-    Name = "Unspectate",
-    Callback = function()
-        Camera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
-    end
-})
-
--- YoxanXHub V2.5 | Part 3/5 - Auto Server Hop by Rarity
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local targetRarity = "Secret"
-local PlaceId = 109983668079237
-local tryingHop = false
-
--- Add rarity dropdown
-_G.TabUtility:AddDropdown({
-    Name = "Hop to Brainrot Rarity",
-    Default = "Secret",
-    Options = {"Secret", "Mythic", "Legendary", "Epic", "Rare"},
-    Callback = function(value)
-        targetRarity = value
-    end
-})
-
--- Button to force hop manually
-_G.TabUtility:AddButton({
-    Name = "🔁 Manual Server Hop",
-    Callback = function()
-        tryingHop = true
-        hopToServer()
-    end
-})
-
--- Brainrot names by rarity
-local brainrotNames = {
-    Secret = {"Graipuss Medussi", "La Grande Combinasion", "Nuclearo Dinossauro", "Garama and Madundung", "Chimpanzini Spiderini"},
-    Mythic = {"Bombombini Gusini", "Cavallo Virtuso", "Gorillo Watermelondrillo", "Avocadorilla"},
-    Legendary = {"Ballerina Cappuccina", "Chef Crabracadabra", "Lionel Cactuseli"},
-    Epic = {"Avocadini Guffo", "Perochello Lemonchello", "Salamino Penguino"},
-    Rare = {"Trippi Troppi", "Tric Trac Baraboom", "Bandito Bobritto"}
-}
-
--- Hop function
-function hopToServer()
-    local success, response = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(
-            string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Desc&limit=100", PlaceId)
-        ))
-    end)
-    
-    if not success then
-        warn("Failed to get server list")
-        return
-    end
-
-    local servers = response.data
-    for _, server in pairs(servers) do
-        if server.playing < server.maxPlayers and server.id ~= game.JobId then
-            TeleportService:TeleportToPlaceInstance(PlaceId, server.id, LocalPlayer)
-            break
-        end
-    end
-end
-
--- Check if desired Brainrot exists in current server
-function checkServerForRarity()
-    local found = false
-    for _, v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("Model") and v:FindFirstChild("NameGui") then
-            for _, name in pairs(brainrotNames[targetRarity]) do
-                if string.find(v.Name, name) then
-                    found = true
-                    break
-                end
+-- Auto refresh Spectate List
+task.spawn(function()
+    while true do
+        local list = {}
+        for _,p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                table.insert(list, p.Name)
             end
         end
-        if found then break end
-    end
-    return found
-end
-
--- Auto-hop loop every 10s
-task.spawn(function()
-    while task.wait(10) do
-        if not checkServerForRarity() then
-            hopToServer()
-        end
+        pcall(function()
+            TabESP["Sections"][3].Dropdown:Refresh(list)
+        end)
+        task.wait(10)
     end
 end)
 
--- YoxanXHub V2.5 | Part 4/5 - Movement & Combat System
+OrionLib:MakeNotification({
+    Name = "YoxanX ESP",
+    Content = "ESP fully loaded!",
+    Image = "rbxassetid://7733658504",
+    Time = 5
+})
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
+local StealTab = TabSteal
 
-local humanoid = nil
-local HRP = nil
-local float = false
-local noclip = false
-local godmode = false
-local speedBoost = false
-local speedValue = 200
+local noclipEnabled = false
+local followEnabled = false
 
-local function setupCharacter()
-    repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
-    HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-end
+-- 🔓 Noclip toggle
+StealTab:AddToggle({
+    Name = "Noclip Bypass",
+    Default = false,
+    Callback = function(v)
+        noclipEnabled = v
+    end
+})
 
-setupCharacter()
-LocalPlayer.CharacterAdded:Connect(setupCharacter)
+-- 💨 Instant Steal (teleport inside base + return)
+StealTab:AddButton({
+    Name = "Instant Steal Nearest",
+    Callback = function()
+        local closest, minDist = nil, math.huge
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local brainrot = plr:FindFirstChild("Brainrot")
+                local dist = (plr.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if brainrot and dist < minDist then
+                    closest, minDist = plr, dist
+                end
+            end
+        end
 
--- Anti TP
-local lastPos = nil
-RunService.Heartbeat:Connect(function()
-    if HRP and lastPos then
-        local dist = (HRP.Position - lastPos).Magnitude
-        if dist > 100 then
-            HRP.CFrame = CFrame.new(lastPos)
+        if closest then
+            -- 🔁 Break CFrame anti teleport
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            root.Anchored = false
+            root.CFrame = closest.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -2)
+            task.wait(0.5)
+            -- 🏠 Teleport to base
+            local base = Workspace:FindFirstChild(LocalPlayer.Name .. "'s Base")
+            if base and base:FindFirstChild("BasePlate") then
+                root.CFrame = base.BasePlate.CFrame + Vector3.new(0, 3, 0)
+            end
         end
     end
-    if HRP then lastPos = HRP.Position end
-end)
+})
 
--- Godmode (no damage and break respawn)
-local function enableGodmode()
-    if not LocalPlayer.Character then return end
-    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-            part.Anchored = false
+-- 🧠 Auto follow thief (useful when someone steals from you)
+StealTab:AddToggle({
+    Name = "Auto Follow Thief",
+    Default = false,
+    Callback = function(v)
+        followEnabled = v
+    end
+})
+
+-- 🕵️ Follow thief logic
+task.spawn(function()
+    while true do
+        if followEnabled then
+            local thief = nil
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                    if plr.Character:FindFirstChild("StolenBrainrot") then
+                        thief = plr
+                        break
+                    end
+                end
+            end
+            if thief then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = thief.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+            end
         end
-    end
-    if humanoid then
-        humanoid.Health = humanoid.MaxHealth
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-    end
-    HRP.Velocity = Vector3.zero
-    HRP.CFrame = HRP.CFrame + Vector3.new(0, 0.1, 0)
-end
-
--- Float Mode
-RunService.RenderStepped:Connect(function()
-    if float and HRP then
-        HRP.Velocity = Vector3.new(0, 25, 0)
+        task.wait(1)
     end
 end)
 
--- Speed Toggle
-RunService.RenderStepped:Connect(function()
-    if speedBoost and humanoid then
-        humanoid.WalkSpeed = speedValue
-    else
-        humanoid.WalkSpeed = 16
-    end
-end)
-
--- Noclip
+-- 🧱 Noclip handler
 RunService.Stepped:Connect(function()
-    if noclip and LocalPlayer.Character then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+    if noclipEnabled and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") and part.CanCollide == true then
                 part.CanCollide = false
             end
@@ -350,113 +265,176 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Steal Logic
-local function instantSteal()
-    for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("ProximityPrompt") and string.find(v.Name, "Steal") then
-            fireproximityprompt(v)
-            task.wait(0.2)
-            HRP.CFrame = CFrame.new(_G.savedBase or Vector3.new(0, 15, 0))
-            break
+local BaseTab = TabBase
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local savedBasePos = nil
+local autoLock = false
+local RunService = game:GetService("RunService")
+
+-- Save base position
+BaseTab:AddButton({
+    Name = "💾 Save Base Location",
+    Callback = function()
+        local base = Workspace:FindFirstChild(LocalPlayer.Name .. "'s Base")
+        if base and base:FindFirstChild("BasePlate") then
+            savedBasePos = base.BasePlate.Position + Vector3.new(0, 3, 0)
+            OrionLib:MakeNotification({Name="Saved", Content="Base location saved!", Time=4})
         end
     end
-end
+})
 
--- Save base
-local function saveBase()
-    _G.savedBase = HRP.Position + Vector3.new(0, 5, 0)
-    _G.notify("✅ Base saved!")
-end
-
--- Orion Toggles & Buttons
-_G.TabCombat:AddToggle({
-    Name = "Godmode (CFrameSafe)",
-    Default = true,
-    Callback = function(state)
-        godmode = state
-        if state then enableGodmode() end
+-- Teleport to saved base
+BaseTab:AddButton({
+    Name = "🏠 Teleport to Saved Base",
+    Callback = function()
+        if savedBasePos then
+            LocalPlayer.Character:PivotTo(CFrame.new(savedBasePos))
+        else
+            OrionLib:MakeNotification({Name="Error", Content="No base position saved!", Time=3})
+        end
     end
 })
 
-_G.TabCombat:AddToggle({
-    Name = "Float Mode",
+-- Auto Lock Toggle
+BaseTab:AddToggle({
+    Name = "🔐 Auto Lock Base when Timer = 0",
     Default = false,
-    Callback = function(state) float = state end
+    Callback = function(v)
+        autoLock = v
+    end
 })
 
-_G.TabCombat:AddToggle({
-    Name = "Noclip Mode",
-    Default = false,
-    Callback = function(state) noclip = state end
-})
-
-_G.TabCombat:AddToggle({
-    Name = "Speed Boost",
-    Default = true,
-    Callback = function(state) speedBoost = state end
-})
-
-_G.TabCombat:AddSlider({
-    Name = "Speed Value",
-    Min = 16,
-    Max = 300,
-    Default = 200,
-    Increment = 10,
-    Callback = function(value) speedValue = value end
-})
-
-_G.TabCombat:AddButton({
-    Name = "💾 Save My Base",
-    Callback = saveBase
-})
-
-_G.TabCombat:AddButton({
-    Name = "⚡ Instant Steal",
-    Callback = instantSteal
-})
-
--- YoxanXHub V2.5 | Part 5/5 - Utility & UI Polish
-local RunService = game:GetService("RunService")
-local TextService = game:GetService("TextService")
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-
--- ⚙️ FPS Counter
-local fps = 0
-local lastUpdate = tick()
-RunService.RenderStepped:Connect(function()
-	fps += 1
-	if tick() - lastUpdate >= 1 then
-		_G.TabUtility:SetName("Utility ⚙️ [FPS: "..fps.."]")
-		fps = 0
-		lastUpdate = tick()
-	end
+-- Base lock logic
+task.spawn(function()
+    while true do
+        if autoLock then
+            local base = Workspace:FindFirstChild(LocalPlayer.Name .. "'s Base")
+            if base and base:FindFirstChild("BaseLockTimer") then
+                local timerVal = tonumber(base.BaseLockTimer.Text)
+                if timerVal and timerVal <= 0 then
+                    fireclickdetector(base:FindFirstChildOfClass("ClickDetector"))
+                    OrionLib:MakeNotification({
+                        Name = "Base Locked",
+                        Content = "Auto Locked your base!",
+                        Time = 3
+                    })
+                    autoLock = false
+                end
+            end
+        end
+        task.wait(1)
+    end
 end)
 
--- 🧪 Debug Info Button
-_G.TabUtility:AddButton({
-	Name = "📊 Show Debug Info",
-	Callback = function()
-		local ping = math.floor(Stats().Network.ServerStatsItem["Data Ping"]:GetValue())
-		local plrCount = #Players:GetPlayers()
-		_G.notify("📈 Ping: "..ping.." ms\n👥 Players: "..plrCount.."\n🧠 Loaded: V2.5")
-	end
+-- Godmode Toggle
+BaseTab:AddToggle({
+    Name = "🛡️ Godmode (Anti KB & CFrame Reset)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            RunService.Stepped:Connect(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
+                    LocalPlayer.Character.HumanoidRootPart.Anchored = false
+                end
+            end)
+        end
+    end
 })
 
--- 🔔 Custom Notify Function
-_G.notify = function(text)
-	local Orion = getgenv().OrionLib
-	if Orion and Orion:FindFirstChild("MakeNotification") then
-		Orion:MakeNotification({
-			Name = "YoxanXHub V2.5",
-			Content = text,
-			Image = "rbxassetid://7733954760", -- bell icon
-			Time = 4
-		})
-	end
-end
+local UtilityTab = TabUtility
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local FPS = 0
+local bestRarity = "Secret"
 
--- 💾 Settings Placeholder
-_G.TabUtility:AddParagraph("Save/Load Settings", "Coming soon in V3.0...")
+-- FPS Counter
+UtilityTab:AddLabel("FPS: Calculating...")
 
-OrionLib:Init()
+RunService.RenderStepped:Connect(function()
+    FPS += 1
+end)
+
+coroutine.wrap(function()
+    while true do
+        UtilityTab:UpdateLabel("FPS: " .. tostring(FPS))
+        FPS = 0
+        task.wait(1)
+    end
+end)()
+
+-- Spectate system
+UtilityTab:AddDropdown({
+    Name = "🎥 Spectate Player",
+    Default = "None",
+    Options = table.map(Players:GetPlayers(), function(plr) return plr.Name end),
+    Callback = function(name)
+        local target = Players:FindFirstChild(name)
+        if target and target.Character then
+            workspace.CurrentCamera.CameraSubject = target.Character:FindFirstChild("Humanoid")
+        end
+    end
+})
+
+-- Reset camera
+UtilityTab:AddButton({
+    Name = "Reset Camera",
+    Callback = function()
+        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
+    end
+})
+
+-- Reset whole UI
+UtilityTab:AddButton({
+    Name = "🔄 Reset YoxanXHub",
+    Callback = function()
+        OrionLib:Destroy()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
+    end
+})
+
+-- Dropdown to choose rarity
+UtilityTab:AddDropdown({
+    Name = "🌐 Target Server Rarity",
+    Default = "Secret",
+    Options = {"Secret", "Mythic", "Legendary"},
+    Callback = function(value)
+        bestRarity = value
+    end
+})
+
+-- Auto Server Hop based on rarity
+UtilityTab:AddButton({
+    Name = "Auto Server Hop to Best",
+    Callback = function()
+        local placeId = 109983668079237
+        local success, servers = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
+        end)
+
+        if success and servers.data then
+            for _, server in pairs(servers.data) do
+                if server.playing < server.maxPlayers then
+                    -- You would check for brainrot rarity in server data if available.
+                    -- For now, hop to first available with space.
+                    TeleportService:TeleportToPlaceInstance(placeId, server.id, LocalPlayer)
+                    return
+                end
+            end
+        else
+            warn("Could not fetch servers")
+        end
+    end
+})
+
+OrionLib:MakeNotification({
+    Name = "YoxanXHub",
+    Content = "UI Loaded! Continue to 2/5.",
+    Image = "rbxassetid://7733658504",
+    Time = 5
+})
